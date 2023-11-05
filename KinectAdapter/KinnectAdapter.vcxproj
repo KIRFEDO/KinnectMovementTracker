@@ -159,7 +159,6 @@ if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepthMode.cpp" />
-    <ClCompile Include="KinectAdapter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

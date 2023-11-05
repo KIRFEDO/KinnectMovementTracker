@@ -1,12 +1,11 @@
 #pragma once
 #include <utility>
 #include <stdexcept>
-#include "stdafx.h"
 #include "IKinectMode.h"
 
 namespace KinectAdapter {
 
-	__declspec(dllexport) enum class KinectMode {
+	enum class __declspec(dllexport) KinectMode {
 		SKELETON,
 		DEPTH,
 		RGB
@@ -26,14 +25,14 @@ namespace KinectAdapter {
 		
 	};
 
-	class __declspec(dllexport) KinectWrapper
-	{
-	public:
-		void InitializeConnection();
-		bool isConnectionOpened() const;
-		~KinectWrapper();
-	private:
-		IKinectSensor* m_pKinectSensor;
-	};
+	//class __declspec(dllexport) KinectWrapper
+	//{
+	//public:
+	//	void InitializeConnection();
+	//	bool isConnectionOpened() const;
+	//	~KinectWrapper();
+	//private:
+	//	IKinectSensor* m_pKinectSensor;
+	//};
 }
 
