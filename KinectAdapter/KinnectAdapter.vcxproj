@@ -72,13 +72,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(KINECTSDK20_DIR)\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(KINECTSDK20_DIR)\inc;$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(KINECTSDK20_DIR)\lib\x64;$(LibraryPath)</LibraryPath>
     <OutDir>..\MovementTracker_main\$(Platform)\$(Configuration)\bin</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(KINECTSDK20_DIR)\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(KINECTSDK20_DIR)\inc;$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(KINECTSDK20_DIR)\lib\x64;$(LibraryPath)</LibraryPath>
     <OutDir>..\MovementTracker_main\$(Platform)\$(Configuration)\bin</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
@@ -152,10 +152,13 @@ if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DepthMode.h" />
+    <ClInclude Include="IKinectMode.h" />
     <ClInclude Include="KinectAdapter.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DepthMode.cpp" />
     <ClCompile Include="KinectAdapter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
