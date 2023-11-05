@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-namespace KinnectAdapter {
+namespace KinectAdapter {
 
 	class __declspec(dllexport) KinectWrapper
 	{

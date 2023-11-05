@@ -5,7 +5,7 @@ VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTracker_GUI", "MovementTracker_GUI.vcxproj", "{080C690C-0142-48B6-BA66-377E96FD8694}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinnectAdapter", "..\KinnectAdapter\KinnectAdapter.vcxproj", "{9F993F71-DF1F-4F90-A58A-B6583398EE31}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinnectAdapter", "..\KinectAdapter\KinnectAdapter.vcxproj", "{9F993F71-DF1F-4F90-A58A-B6583398EE31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

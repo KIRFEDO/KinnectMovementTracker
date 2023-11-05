@@ -3,6 +3,9 @@
 
 #include "framework.h"
 #include "MovementTracker_GUI.h"
+#include "KinectAdapter.h"
+
+using namespace KinectAdapter;
 
 #define MAX_LOADSTRING 100
 
