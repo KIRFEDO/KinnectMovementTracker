@@ -1,24 +1,45 @@
 // MovementTracker_GUI.cpp : Defines the entry point for the application.
 //
 
+#include <stdexcept>
+
 #include "framework.h"
 #include "MovementTracker_GUI.h"
 #include "KinectAdapter.h"
+#include "ImageRenderer.h"
 
 using namespace KinectAdapter;
 
 #define MAX_LOADSTRING 100
 
 // Global Variables:
+HWND hWnd;                                      // main window
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+// Direct2D
+IKinectMode* m_kinectAdapter;
+ImageRenderer* m_pDrawDepth;
+ID2D1Factory* m_pD2DFactory;
+RGBQUAD* m_pDepthRGBX = new RGBQUAD[512 * 424];
+
+//D2D legacy variables
+INT64                   m_nStartTime;
+INT64                   m_nLastCounter;
+double                  m_fFreq = 10000000;
+INT64                   m_nNextStatusTime;
+DWORD                   m_nFramesSinceUpdate;
+bool                    m_bSaveScreenshot;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
+BOOL                InitKinectAdapterInstance();
+BOOL                InitKinectRenderer();
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+void UpdateKinectImage();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -38,16 +59,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow))
     {
-        return FALSE;
+        return false;
+    }
+    if (!InitKinectAdapterInstance())
+    {
+        return false;
+    }
+    if (!InitKinectRenderer())
+    {
+        return false;
     }
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MOVEMENTTRACKERGUI));
 
     MSG msg;
 
+    //TO DO set up look for periodic update without mouse movement
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
+
+        UpdateKinectImage();
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
@@ -90,7 +122,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //   FUNCTION: InitInstance(HINSTANCE, int)
 //
 //   PURPOSE: Saves instance handle and creates main window
-//
+// 
 //   COMMENTS:
 //
 //        In this function, we save the instance handle in a global variable and
@@ -100,7 +132,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
@@ -114,6 +146,52 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+BOOL InitKinectAdapterInstance()
+{
+    m_kinectAdapter = ModeFactory::getMode(KinectMode::DEPTH);
+
+    HRESULT hr = m_kinectAdapter != nullptr;
+
+    hr = m_kinectAdapter->initiateKinectConnection();
+    return SUCCEEDED(hr);
+}
+
+//
+//   FUNCTION: InitInstance(HINSTANCE, int)
+//
+//   PURPOSE: Saves instance handle and creates main window
+// 
+//   COMMENTS:
+//
+//        In this function, we save the instance handle in a global variable and
+//        create and display the main program window.
+//
+BOOL InitKinectRenderer()
+{
+    auto m_hWnd = hWnd;
+
+    // Init Direct2D
+    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
+
+    // Create and initialize a new Direct2D image renderer (take a look at ImageRenderer.h)
+    // We'll use this to draw the data we receive from the Kinect to the screen
+
+    //TO DO Replace size with dynamic values
+    const int cDepthWidth = 512;
+    const int cDepthHeight = 424;
+    //------
+    m_pDrawDepth = new ImageRenderer();
+    //HRESULT hr = m_pDrawDepth->Initialize(GetDlgItem(m_hWnd, IDC_VIDEOVIEW), m_pD2DFactory, cDepthWidth, cDepthHeight, cDepthWidth * sizeof(RGBQUAD));
+    HRESULT hr = m_pDrawDepth->Initialize(m_hWnd, m_pD2DFactory, cDepthWidth, cDepthHeight, cDepthWidth * sizeof(RGBQUAD));
+    if (FAILED(hr))
+    {
+        //SetStatusMessage(L"Failed to initialize the Direct2D draw device.", 10000, true);
+        return FALSE;
+    }
+
+   return TRUE;
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -123,6 +201,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_PAINT    - Paint the main window
 //  WM_DESTROY  - post a quit message and return
 //
+//  Comment: Used for upper drop-down line
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -180,4 +259,49 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void UpdateKinectImage()
+{
+    IKinectData* res = new IKinectData;
+    RGBQUAD* pRGBX;
+    HRESULT hr;
+    hr = m_kinectAdapter->getCurrentFrame(res);
+    if (SUCCEEDED(hr)) {
+
+        // Make sure we've received valid data
+        if (m_pDepthRGBX && res->pBuffer && res->validFrame)
+        {
+            RGBQUAD* pRGBX = m_pDepthRGBX;
+
+            // end pixel is start + width*height - 1
+            const UINT16* pBufferEnd = res->pBuffer + (res->nWidth * res->nHeight);
+            auto pBuffer = res->pBuffer;
+
+            while (pBuffer < pBufferEnd)
+            {
+                USHORT depth = *pBuffer;
+
+                // To convert to a byte, we're discarding the most-significant
+                // rather than least-significant bits.
+                // We're preserving detail, although the intensity will "wrap."
+                // Values outside the reliable depth range are mapped to 0 (black).
+
+                // Note: Using conditionals in this loop could degrade performance.
+                // Consider using a lookup table instead when writing production code.
+                BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? (depth % 256) : 0);
+
+                pRGBX->rgbRed = intensity;
+                pRGBX->rgbGreen = intensity;
+                pRGBX->rgbBlue = intensity;
+
+                ++pRGBX;
+                ++pBuffer;
+            }
+
+            // Draw the data with Direct2D
+            m_pDrawDepth->Draw(reinterpret_cast<BYTE*>(m_pDepthRGBX), res->nWidth * res->nHeight * sizeof(RGBQUAD));
+        }
+    }
+    m_kinectAdapter->releaseSpecificResources();
 }

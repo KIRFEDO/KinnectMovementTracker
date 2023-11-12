@@ -2,19 +2,29 @@
 #include "IKinectMode.h"
 #include "Kinect.h"
 
-class DepthMode : public IKinectMode
-{
-public:
-    DepthMode();
-    ~DepthMode();
+namespace KinectAdapter {
 
-	std::pair<int, int> getFrameSize() const override;
+	class __declspec(dllexport) DepthMode : public IKinectMode
+	{
+	public:
+		DepthMode();
+		~DepthMode();
 
-private:
-	const int m_width = 512;
-	const int m_height = 424;
+		virtual HRESULT initiateKinectConnection() override;
+		virtual void releaseSpecificResources() override;
 
-	IKinectSensor* m_pKinectSensor;
-	IDepthFrameReader* m_reader;
-};
+		virtual std::pair<int, int> getFrameSize() const override;
+		virtual HRESULT getCurrentFrame(IKinectData* pKinectDepthData) override;
 
+	private:
+		const int m_width = 512;
+		const int m_height = 424;
+
+		IKinectSensor* m_pKinectSensor;
+		IDepthFrameReader* m_pDepthFrameReader;
+
+		IDepthFrame* m_pDepthFrame = nullptr;
+		IFrameDescription* m_pFrameDescription = nullptr;
+	};
+
+}

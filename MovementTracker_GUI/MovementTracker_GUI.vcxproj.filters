@@ -27,9 +27,18 @@
     <ClInclude Include="MovementTracker_GUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ImageRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MovementTracker_inc\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MovementTracker_GUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,51 +2,127 @@
 #include "DepthMode.h"
 #include "stdafx.h"
 
-DepthMode::DepthMode()
-{
-    HRESULT hr;
-    hr = GetDefaultKinectSensor(&m_pKinectSensor);
-    if (FAILED(hr))
+namespace KinectAdapter {
+
+    DepthMode::DepthMode()
     {
-        throw std::runtime_error("Can`t connect to the kinect sensor");
     }
 
-    if (m_pKinectSensor)
+    DepthMode::~DepthMode()
     {
-        // Initialize the Kinect and get the depth reader
-        IDepthFrameSource* pDepthFrameSource = NULL;
+        SafeRelease(m_pDepthFrameReader);
+        if (m_pKinectSensor) {
+            m_pKinectSensor->Close();
+        }
+        SafeRelease(m_pKinectSensor);
+        SafeRelease(m_pDepthFrame);
+    }
 
-        hr = m_pKinectSensor->Open();
+    HRESULT DepthMode::initiateKinectConnection()
+    {
+        HRESULT hr;
+        hr = GetDefaultKinectSensor(&m_pKinectSensor);
+        if (FAILED(hr))
+        {
+            throw std::runtime_error("Can`t connect to the kinect sensor");
+        }
+
+        if (m_pKinectSensor)
+        {
+            // Initialize the Kinect and get the depth reader
+            IDepthFrameSource* pDepthFrameSource = NULL;
+
+            hr = m_pKinectSensor->Open();
+
+            if (SUCCEEDED(hr))
+            {
+                hr = m_pKinectSensor->get_DepthFrameSource(&pDepthFrameSource);
+            }
+
+            if (SUCCEEDED(hr))
+            {
+                hr = pDepthFrameSource->OpenReader(&m_pDepthFrameReader);
+            }
+
+            SafeRelease(pDepthFrameSource);
+        }
+
+        return hr;
+    }
+
+    void DepthMode::releaseSpecificResources()
+    {
+        //TO DO properly handle memory allocated by Kinect resources
+        SafeRelease(m_pDepthFrame);
+        SafeRelease(m_pFrameDescription);
+    }
+
+    std::pair<int, int> DepthMode::getFrameSize() const
+    {
+        return std::pair<int, int>(m_width, m_height);
+    }
+
+    HRESULT DepthMode::getCurrentFrame(IKinectData* pKinectDepthData)
+    {
+        HRESULT hr = m_pDepthFrameReader->AcquireLatestFrame(&m_pDepthFrame);
 
         if (SUCCEEDED(hr))
         {
-            hr = m_pKinectSensor->get_DepthFrameSource(&pDepthFrameSource);
-        }
+            INT64 nTime = 0;
+            int nWidth = 0;
+            int nHeight = 0;
+            USHORT nDepthMinReliableDistance = 0;
+            USHORT nDepthMaxDistance = 0;
+            UINT nBufferSize = 0;
+            UINT16* pBuffer = NULL;
 
-        if (SUCCEEDED(hr))
-        {
-            hr = pDepthFrameSource->OpenReader(&m_reader);
-        }
+            hr = m_pDepthFrame->get_RelativeTime(&nTime);
 
-        SafeRelease(pDepthFrameSource);
+            if (SUCCEEDED(hr))
+            {
+                hr = m_pDepthFrame->get_FrameDescription(&m_pFrameDescription);
+            }
+
+            if (SUCCEEDED(hr))
+            {
+                hr = m_pFrameDescription->get_Width(&nWidth);
+            }
+
+            if (SUCCEEDED(hr))
+            {
+                hr = m_pFrameDescription->get_Height(&nHeight);
+            }
+
+            if (SUCCEEDED(hr))
+            {
+                hr = m_pDepthFrame->get_DepthMinReliableDistance(&nDepthMinReliableDistance);
+            }
+
+            if (SUCCEEDED(hr))
+            {
+                //TO DO
+                // Check if data from certain distance can be ignored?
+
+                // In order to see the full range of depth (including the less reliable far field depth)
+                // we are setting nDepthMaxDistance to the extreme potential depth threshold
+                nDepthMaxDistance = USHRT_MAX;
+
+                // Note:  If you wish to filter by reliable depth distance, uncomment the following line.
+                //// hr = pDepthFrame->get_DepthMaxReliableDistance(&nDepthMaxDistance);
+            }
+
+            bool validFrame = false;
+            if (SUCCEEDED(hr))
+            {
+                hr = m_pDepthFrame->AccessUnderlyingBuffer(&nBufferSize, &pBuffer);
+                validFrame = true;
+            }
+
+            IKinectData res(nTime, pBuffer, nWidth, nHeight, 
+                            nDepthMinReliableDistance, nDepthMaxDistance, validFrame);
+            *pKinectDepthData = res;
+        }
+        return hr;
     }
 
-    if (FAILED(hr))
-    {
-        throw std::runtime_error("Can`t connect to the depth frame source");
-    }
-}
-
-DepthMode::~DepthMode()
-{
-    SafeRelease(m_reader);
-	if (m_pKinectSensor) {
-		m_pKinectSensor->Close();
-	}
-	SafeRelease(m_pKinectSensor);
-}
-
-std::pair<int, int> DepthMode::getFrameSize() const
-{
-    return std::pair<int, int>(m_width, m_height);
 }
