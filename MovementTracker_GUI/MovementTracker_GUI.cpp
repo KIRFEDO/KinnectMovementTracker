@@ -14,6 +14,7 @@ using namespace KinectAdapter;
 
 // Global Variables:
 HWND hWnd;                                      // main window
+HWND hWndForKinectRendering;                    // window for kinect rendering
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
@@ -72,18 +73,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MOVEMENTTRACKERGUI));
 
-    MSG msg;
+    MSG msg = { 0 };
 
     //TO DO set up look for periodic update without mouse movement
     // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
+    while (WM_QUIT != msg.message)
     {
-
         UpdateKinectImage();
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+
+        while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
         {
+            // If a dialog message will be taken care of by the dialog proc
+            if (hWnd && IsDialogMessageW(hWnd, &msg))
+            {
+                continue;
+            }
+
             TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            DispatchMessageW(&msg);
         }
     }
 
@@ -132,8 +139,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME,
+      CW_USEDEFAULT, 0, 1000, 1000, nullptr, nullptr, hInstance, nullptr);
+
+   hWndForKinectRendering = CreateWindowW(szWindowClass, szTitle, WS_CHILD | WS_VISIBLE,
+       CW_USEDEFAULT, 0, 512, 424, hWnd, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -168,7 +178,7 @@ BOOL InitKinectAdapterInstance()
 //
 BOOL InitKinectRenderer()
 {
-    auto m_hWnd = hWnd;
+    auto m_hWnd = hWndForKinectRendering;
 
     // Init Direct2D
     D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
@@ -180,12 +190,11 @@ BOOL InitKinectRenderer()
     const int cDepthWidth = 512;
     const int cDepthHeight = 424;
     //------
+
     m_pDrawDepth = new ImageRenderer();
-    //HRESULT hr = m_pDrawDepth->Initialize(GetDlgItem(m_hWnd, IDC_VIDEOVIEW), m_pD2DFactory, cDepthWidth, cDepthHeight, cDepthWidth * sizeof(RGBQUAD));
     HRESULT hr = m_pDrawDepth->Initialize(m_hWnd, m_pD2DFactory, cDepthWidth, cDepthHeight, cDepthWidth * sizeof(RGBQUAD));
     if (FAILED(hr))
     {
-        //SetStatusMessage(L"Failed to initialize the Direct2D draw device.", 10000, true);
         return FALSE;
     }
 
