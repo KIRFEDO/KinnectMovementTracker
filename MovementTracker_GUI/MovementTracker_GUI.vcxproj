@@ -148,18 +148,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
+    <ClInclude Include="App.h" />
+    <ClInclude Include="AppHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="ImageRenderer.h" />
-    <ClInclude Include="MovementTracker_GUI.h" />
-    <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="App.cpp" />
     <ClCompile Include="ImageRenderer.cpp" />
     <ClCompile Include="MovementTracker_GUI.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="MovementTracker_GUI.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="MovementTracker_GUI.ico" />
