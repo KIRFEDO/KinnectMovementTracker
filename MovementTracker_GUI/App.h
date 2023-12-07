@@ -11,7 +11,8 @@ public:
 	HRESULT run();
 	~App();
 private:
-	HRESULT DrawUI();
+	HRESULT InitApp();
+	HRESULT InitUI();
 	HRESULT InitializeAndRegisterMainWindowClass();
 
 	HWND m_hWndMain;									// main window

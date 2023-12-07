@@ -8,24 +8,27 @@ LRESULT CALLBACK MainWindowProcessor(
     LPARAM lParam
 )
 {
-    LRESULT result;
-
     switch (uMsg)
     {
         case WM_CREATE:
         {
-            result = 0;
-
-            break;
+            return 0;
         }
-
-        default:
+        case WM_PAINT:
         {
-            result = DefWindowProc(hwnd, uMsg, wParam, lParam);
-
-            break;
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            EndPaint(hwnd, &ps);
+            return 0;
         }
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+            return 0;
+        }
+        default:
+            break;
     }
 
-    return result;
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 };

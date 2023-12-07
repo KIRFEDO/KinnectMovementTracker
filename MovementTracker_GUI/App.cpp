@@ -1,8 +1,6 @@
 #include "App.h"
 #include "AppHelpers.h"
 
-#define ReturnIfFails(func) {auto res = func; if(res!=S_OK){return res;}}
-
 App::App(HINSTANCE hInstCurr, int nCmdShow)
 {
 	this->m_hInstCurr = hInstCurr;
@@ -11,14 +9,19 @@ App::App(HINSTANCE hInstCurr, int nCmdShow)
 
 HRESULT App::run()
 {
-	ReturnIfFails(
-		InitializeAndRegisterMainWindowClass()
-	)
-	ReturnIfFails(
-		DrawUI();
-	)
+	HRESULT hr;
+	hr = InitApp();
 
-	return S_OK;
+	MSG msg;
+
+	// Main message loop:
+	while (GetMessage(&msg, nullptr, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	return hr;
 }
 
 App::~App()
@@ -26,12 +29,12 @@ App::~App()
 	
 }
 
-HRESULT App::DrawUI()
+HRESULT App::InitUI()
 {	
 	/*
 	 Fixed size 1280x700 used to get rid od of scaling issues further on
 	*/
-	m_hWndMain = CreateWindowW(m_mainClassName, m_appTitle, WS_VISIBLE,
+	m_hWndMain = CreateWindowW(m_mainClassName, m_appTitle, WS_OVERLAPPEDWINDOW,
 		0, 0, 1280, 700, nullptr, nullptr, m_hInstCurr, nullptr);
 
 	auto res = GetLastError();
@@ -53,8 +56,20 @@ HRESULT App::DrawUI()
 
 HRESULT App::InitializeAndRegisterMainWindowClass()
 {
+	m_mainWindow.style = CS_HREDRAW | CS_VREDRAW;
 	m_mainWindow.lpfnWndProc = MainWindowProcessor;
 	m_mainWindow.hInstance = m_hInstCurr;
 	m_mainWindow.lpszClassName = m_mainClassName;
+	m_mainWindow.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	return RegisterClass(&m_mainWindow) == 0 ? E_FAIL : S_OK;
+}
+
+HRESULT App::InitApp()
+{
+	HRESULT hr;
+	hr = InitializeAndRegisterMainWindowClass();
+	if (SUCCEEDED(hr))
+		hr = InitUI();
+
+	return hr;
 }

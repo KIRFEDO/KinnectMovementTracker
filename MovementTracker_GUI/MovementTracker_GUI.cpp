@@ -46,45 +46,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     App app(hInstance, nCmdShow);
     auto res = app.run();
-    /*if (!InitKinectAdapterInstance())
-    {
-        return false;
-    }
-    if (!InitKinectRenderer())
-    {
-        return false;
-    }*/
-
-    //MSG msg = { 0 };
-
-    ////TO DO set up look for periodic update without mouse movement
-    //// Main message loop:
-    //while (WM_QUIT != msg.message)
-    //{
-    //    UpdateKinectImage();
-
-    //    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
-    //    {
-    //        // If a dialog message will be taken care of by the dialog proc
-    //        if (hWnd && IsDialogMessageW(hWnd, &msg))
-    //        {
-    //            continue;
-    //        }
-
-    //        TranslateMessage(&msg);
-    //        DispatchMessageW(&msg);
-    //    }
-    //}
-    return 0;
+    return SUCCEEDED(res) ? 0 : -1;
 }
 
 BOOL InitKinectAdapterInstance()
 {
+    HRESULT hr;
     m_kinectAdapter = ModeFactory::getMode(KinectMode::DEPTH);
-
-    HRESULT hr = m_kinectAdapter != nullptr;
-
-    hr = m_kinectAdapter->initiateKinectConnection();
+    hr = m_kinectAdapter != nullptr ? S_OK : E_POINTER;
+    if(SUCCEEDED(hr))
+        hr = m_kinectAdapter->initiateKinectConnection();
     return SUCCEEDED(hr);
 }
 
