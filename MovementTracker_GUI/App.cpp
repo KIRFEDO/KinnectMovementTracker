@@ -84,9 +84,7 @@ HRESULT App::InitGUI()
 	auto res = GetLastError();
 
 	if (!m_hWndMain)
-	{
 		return E_HANDLE;
-	}
 
 	ShowWindow(m_hWndMain, m_nCmdShow);
 	UpdateWindow(m_hWndMain);
@@ -97,7 +95,8 @@ HRESULT App::InitGUI()
 HRESULT App::InitKinectConnection()
 {
 	HRESULT hr;
-	if (m_kinectAdapter != nullptr) {
+	if (m_kinectAdapter != nullptr)
+	{
 		delete m_kinectAdapter;
 		m_kinectAdapter = nullptr;
 	}
@@ -145,8 +144,8 @@ HRESULT App::UpdateKinectImage()
 	HRESULT hr;
 	IKinectData* res = new IKinectData();
 	hr = m_kinectAdapter->getCurrentFrame(res);
-	if (SUCCEEDED(hr)) {
-
+	if (SUCCEEDED(hr))
+	{
 		// Make sure we've received valid data
 		if (m_pDepthRGBX && res->pBuffer && res->validFrame)
 		{
