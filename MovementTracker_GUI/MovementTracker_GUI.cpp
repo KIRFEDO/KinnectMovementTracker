@@ -3,10 +3,6 @@
 
 #include <stdexcept>
 
-#include "framework.h"
-#include "KinectAdapter.h"
-#include "ImageRenderer.h"
-
 #include "App.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
