@@ -1,6 +1,7 @@
 #include "App.h"
 #include "AppHelpers.h"
 #include <tuple>
+#include <memory>
 #include "d2d1.h"
 
 using namespace KinectAdapter;
@@ -141,7 +142,7 @@ HRESULT App::UpdateKinectImage()
 	/*
 		TODO add handling of empty kinect view instance
 	*/ 
-	HRESULT hr;
+	HRESULT hr = E_FAIL;
 	IKinectData* res = new IKinectData();
 	hr = m_kinectAdapter->getCurrentFrame(res);
 	if (SUCCEEDED(hr))
@@ -154,36 +155,35 @@ HRESULT App::UpdateKinectImage()
 			// end pixel is start + width*height - 1
 			const UINT16* pBufferEnd = res->pBuffer + (res->nWidth * res->nHeight);
 			auto pBuffer = res->pBuffer;
-
+			int localMax = INT_MIN;
 			while (pBuffer < pBufferEnd)
 			{
 				USHORT depth = *pBuffer;
+				if (depth > localMax)
+					localMax = depth;
+				++pBuffer;
+			}
 
-				// To convert to a byte, we're discarding the most-significant
-				// rather than least-significant bits.
-				// We're preserving detail, although the intensity will "wrap."
-				// Values outside the reliable depth range are mapped to 0 (black).
+			pBuffer = res->pBuffer;
+			while (pBuffer < pBufferEnd)
+			{
+				USHORT depth = *pBuffer;
+				float pixelVal = (float)depth / (float)localMax * 256;
 
-				// Note: Using conditionals in this loop could degrade performance.
-				// Consider using a lookup table instead when writing production code.
-
-				//TODO properly handle death values
-				auto depth_max = 250;
-
-				BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? (depth % depth_max) : 0);
+				BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? pixelVal : 0);
 
 				pRGBX->rgbRed = intensity;
 				pRGBX->rgbGreen = intensity;
 				pRGBX->rgbBlue = intensity;
-
+				
 				++pRGBX;
 				++pBuffer;
 			}
-
 			// Draw the data with Direct2D
 			m_imageRenderer.Draw(reinterpret_cast<BYTE*>(m_pDepthRGBX), res->nWidth * res->nHeight * sizeof(RGBQUAD));
 		}
 	}
+	delete res;
 	m_kinectAdapter->releaseSpecificResources();
 	return hr;
 }
