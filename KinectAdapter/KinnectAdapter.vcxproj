@@ -154,9 +154,7 @@ if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
   <ItemGroup>
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
     <ClInclude Include="DepthMode.h" />
-    <ClInclude Include="IKinectData.h" />
-    <ClInclude Include="IKinectMode.h" />
-    <ClInclude Include="KinectAdapter.h" />
+    <ClInclude Include="DepthModeData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepthMode.cpp" />

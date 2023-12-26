@@ -9,7 +9,6 @@ using namespace KinectAdapter;
 
 App::App(HINSTANCE hInstCurr, int nCmdShow)
 {
-	m_kinectAdapter = nullptr;
 	m_pDepthRGBX = nullptr;
 
 	this->m_hInstCurr = hInstCurr;
@@ -27,8 +26,8 @@ HRESULT App::run()
 	while (WM_QUIT != msg.message)
 	{
 		HRESULT hr = E_FAIL;
-		IKinectData* res = new IKinectData();
-		hr = m_kinectAdapter->getCurrentFrame(res);
+		DepthModeData* res = new DepthModeData();
+		hr = m_depthMode.getCurrentFrame(res);
 		
 		/*{
 			//Snippet for opening one frame from the file below
@@ -62,7 +61,7 @@ HRESULT App::run()
 					RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
 			}
 		}
-		m_kinectAdapter->releaseSpecificResources();
+		m_depthMode.ReleaseSpecificResources();
 		delete res;
 
 		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
@@ -115,7 +114,7 @@ HRESULT App::InitGUI()
 		0, 0, 1280, 700, nullptr, nullptr, m_hInstCurr, nullptr);
 
 	int width, height;
-	std::tie(width, height) = m_kinectAdapter->getFrameSize();
+	std::tie(width, height) = m_depthMode.getFrameSize();
 
 	m_hWndKinect = CreateWindowW(m_kinectViewWindowName, (LPCTSTR)NULL, WS_CHILD | WS_VISIBLE,
 		0, 0, 640, 700, m_hWndMain, nullptr, m_hInstCurr, nullptr);
@@ -140,18 +139,10 @@ HRESULT App::InitGUI()
 	return S_OK;
 }
 
-HRESULT App::InitKinectConnection()
+HRESULT App::InitKinectAdapters()
 {
 	HRESULT hr;
-	if (m_kinectAdapter != nullptr)
-	{
-		delete m_kinectAdapter;
-		m_kinectAdapter = nullptr;
-	}
-	m_kinectAdapter = ModeFactory::getMode(KinectMode::DEPTH);
-	hr = m_kinectAdapter != nullptr ? S_OK : E_POINTER;
-	if (SUCCEEDED(hr))
-		hr = m_kinectAdapter->initiateKinectConnection();
+	hr = m_depthMode.Init();
 	return hr;
 }
 
@@ -162,7 +153,7 @@ HRESULT App::InitKinectRenderer()
 	D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
 
 	int width, height;
-	std::tie(width, height) = m_kinectAdapter->getFrameSize();
+	std::tie(width, height) = m_depthMode.getFrameSize();
 	m_pDepthRGBX = new RGBQUAD[width * height];
 
 	HRESULT hr = m_imageRenderer.Initialize(m_hWndKinect, m_pD2DFactory, width, height, width * sizeof(RGBQUAD));
@@ -175,7 +166,7 @@ HRESULT App::InitApp()
 	HRESULT hr;
 	hr = InitAndRegisterWindowClasses();
 	if (SUCCEEDED(hr))
-		hr = InitKinectConnection();
+		hr = InitKinectAdapters();
 	if (SUCCEEDED(hr))
 		hr = InitGUI();
 	if (SUCCEEDED(hr))
@@ -184,7 +175,7 @@ HRESULT App::InitApp()
 	return hr;
 }
 
-HRESULT App::UpdateKinectImage(IKinectData* res)
+HRESULT App::UpdateKinectImage(DepthModeData* res)
 {
 	HRESULT hr = E_FAIL;
 	// Make sure we've received valid data
@@ -243,7 +234,7 @@ HRESULT App::ResetFileWriters()
 	return hr;
 }
 
-HRESULT App::WriteKinectData(IKinectData* res)
+HRESULT App::WriteKinectData(DepthModeData* res)
 {
 	HRESULT hr = E_FAIL;
 	hr = m_writerDepthMode.WriteData(res->pBuffer);

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "framework.h"
-#include "KinectAdapter.h"
+#include "DepthMode.h"
 #include "ImageRenderer.h"
 #include "FileWriter.h"
 #include "FileReaderDepthMode.h"
 #include <d2d1.h>
 
 using namespace FileWriter;
+using namespace KinectAdapter;
 
 class App
 {
@@ -21,15 +22,15 @@ class App
 		//Initializers
 		HRESULT InitAndRegisterWindowClasses();
 		HRESULT InitGUI();
-		HRESULT InitKinectConnection();
+		HRESULT InitKinectAdapters();
 		HRESULT InitKinectRenderer();
 		HRESULT InitApp();
 
 		//Cyclic app functions
-		HRESULT UpdateKinectImage(IKinectData* res);
+		HRESULT UpdateKinectImage(DepthModeData* res);
 		HRESULT InitiateFileWriters();
 		HRESULT ResetFileWriters();
-		HRESULT WriteKinectData(IKinectData* res);
+		HRESULT WriteKinectData(DepthModeData* res);
 
 		HWND m_hWndMain;									// main window
 		HWND m_hWndKinect;									// window for kinect rendering
@@ -39,7 +40,7 @@ class App
 		HINSTANCE m_hInstCurr;								// current instance
 		int m_nCmdShow;										// main window show mode
 		const WCHAR m_appTitle[18] = L"Movement recorder";
-		IKinectMode* m_kinectAdapter;
+		DepthMode m_depthMode;
 		ImageRenderer m_imageRenderer;
 		RGBQUAD* m_pDepthRGBX;
 

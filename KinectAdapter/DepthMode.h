@@ -1,20 +1,21 @@
 #pragma once
-#include "IKinectMode.h"
+#include "DepthModeData.h"
 #include "Kinect.h"
+#include <utility>
 
 namespace KinectAdapter {
 
-	class __declspec(dllexport) DepthMode : public IKinectMode
+	class __declspec(dllexport) DepthMode
 	{
 	public:
 		DepthMode();
 		~DepthMode();
 
-		virtual HRESULT initiateKinectConnection() override;
-		virtual void releaseSpecificResources() override;
+		HRESULT Init();
+		void ReleaseSpecificResources();
 
-		virtual std::pair<int, int> getFrameSize() const override;
-		virtual HRESULT getCurrentFrame(IKinectData* pKinectDepthData) override;
+		std::pair<int, int> getFrameSize() const;
+		HRESULT getCurrentFrame(DepthModeData* pKinectDepthData);
 
 	private:
 		const int m_width = 512;

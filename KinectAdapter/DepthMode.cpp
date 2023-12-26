@@ -18,7 +18,7 @@ namespace KinectAdapter {
         SafeRelease(m_pDepthFrame);
     }
 
-    HRESULT DepthMode::initiateKinectConnection()
+    HRESULT DepthMode::Init()
     {
         HRESULT hr;
         hr = GetDefaultKinectSensor(&m_pKinectSensor);
@@ -29,7 +29,7 @@ namespace KinectAdapter {
 
         if (m_pKinectSensor)
         {
-            // Initialize the Kinect and get the depth reader
+            // Init the Kinect and get the depth reader
             IDepthFrameSource* pDepthFrameSource = NULL;
 
             hr = m_pKinectSensor->Open();
@@ -50,7 +50,7 @@ namespace KinectAdapter {
         return hr;
     }
 
-    void DepthMode::releaseSpecificResources()
+    void DepthMode::ReleaseSpecificResources()
     {
         //TODO properly handle memory allocated by Kinect resources
         SafeRelease(m_pDepthFrame);
@@ -62,7 +62,7 @@ namespace KinectAdapter {
         return std::pair<int, int>(m_width, m_height);
     }
 
-    HRESULT DepthMode::getCurrentFrame(IKinectData* pKinectDepthData)
+    HRESULT DepthMode::getCurrentFrame(DepthModeData* pDepthModeData)
     {
         HRESULT hr = m_pDepthFrameReader->AcquireLatestFrame(&m_pDepthFrame);
 
@@ -118,9 +118,9 @@ namespace KinectAdapter {
                 validFrame = true;
             }
 
-            IKinectData res(nTime, pBuffer, nWidth, nHeight, 
+            DepthModeData res(nTime, pBuffer, nWidth, nHeight,
                             nDepthMinReliableDistance, nDepthMaxDistance, validFrame);
-            *pKinectDepthData = res;
+            *pDepthModeData = res;
         }
         return hr;
     }
