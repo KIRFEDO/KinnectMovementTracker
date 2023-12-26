@@ -12,12 +12,14 @@
     <ClInclude Include="DepthMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KinectAdapter.h" />
     <ClInclude Include="..\MovementTracker_inc\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IKinectData.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectAdapter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

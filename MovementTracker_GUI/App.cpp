@@ -1,5 +1,6 @@
 #include "App.h"
-#include "AppHelpers.h"
+#include "WindowsProcessingFunctions.h"
+#include "WindowIDs.h"
 #include <tuple>
 #include <memory>
 #include "d2d1.h"
@@ -25,7 +26,45 @@ HRESULT App::run()
 	// Main message loop:
 	while (WM_QUIT != msg.message)
 	{
-		UpdateKinectImage();
+		HRESULT hr = E_FAIL;
+		IKinectData* res = new IKinectData();
+		hr = m_kinectAdapter->getCurrentFrame(res);
+		
+		/*{
+			//Snippet for opening one frame from the file below
+			//In case of using this snippet additional delition of pBuffer is needed
+			WCHAR test[19] = L"C:/BuffEnv/res.txt";
+			hr = m_readerDepthMode.Reset();
+			hr = m_readerDepthMode.Initiate(test, 19);
+			m_readerDepthMode.ReadFrame(&res->pBuffer);
+			res->nWidth = 512;
+			res->nHeight = 424;
+			res->nDepthMinReliableDistance = 0;
+			res->nDepthMaxDistance = INT16_MAX;
+			hr = S_OK;
+		}*/
+
+		if (SUCCEEDED(hr)) 
+		{
+			UpdateKinectImage(res);
+			switch (RECORD_DATA_FLAG) 
+			{
+				case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
+					//TODO Add header creator
+					InitiateFileWriters();
+					RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
+				case RECORD_DATA_STATE::RECORDING:
+					WriteKinectData(res);
+					break;
+				case RECORD_DATA_STATE::FINISH_RECORDING:
+					//TODO compress all files into zip file. Create file with vector of time
+					ResetFileWriters();
+					RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+			}
+		}
+		m_kinectAdapter->releaseSpecificResources();
+		delete res;
+
 		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -50,6 +89,7 @@ HRESULT App::InitAndRegisterWindowClasses()
 	m_mainWindow.hInstance = m_hInstCurr;
 	m_mainWindow.lpszClassName = m_mainWindowName;
 	m_mainWindow.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	m_mainWindow.hCursor = LoadCursor(NULL, IDC_ARROW);
 
 	hr = RegisterClass(&m_mainWindow) == 0 ? E_FAIL : S_OK;
 	if (FAILED(hr))
@@ -62,8 +102,6 @@ HRESULT App::InitAndRegisterWindowClasses()
 	hr = RegisterClass(&m_kinectViewWindow);
 	if (FAILED(hr))
 		return hr;
-
-	auto res = GetLastError();
 
 	return hr;
 }
@@ -80,7 +118,16 @@ HRESULT App::InitGUI()
 	std::tie(width, height) = m_kinectAdapter->getFrameSize();
 
 	m_hWndKinect = CreateWindowW(m_kinectViewWindowName, (LPCTSTR)NULL, WS_CHILD | WS_VISIBLE,
-		0, 0, width, height, m_hWndMain, nullptr, m_hInstCurr, nullptr);
+		0, 0, 640, 700, m_hWndMain, nullptr, m_hInstCurr, nullptr);
+	
+	m_hWndOutputFilePath = CreateWindowW(L"edit", L"Hint?", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+		800, 50, 250, 20, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
+	
+	m_hWndChoseOutputFileBtn = CreateWindowW(L"button", L"Chose output file", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		800, 120, 150, 50, m_hWndMain, (HMENU) BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
+	
+	m_hWndStartStopRecordingBtn = CreateWindowW(L"button", L"Start/Stop recording", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		800, 220, 150, 50, m_hWndMain, (HMENU) BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
 
 	auto res = GetLastError();
 
@@ -137,53 +184,68 @@ HRESULT App::InitApp()
 	return hr;
 }
 
-HRESULT App::UpdateKinectImage()
+HRESULT App::UpdateKinectImage(IKinectData* res)
 {
-	/*
-		TODO add handling of empty kinect view instance
-	*/ 
 	HRESULT hr = E_FAIL;
-	IKinectData* res = new IKinectData();
-	hr = m_kinectAdapter->getCurrentFrame(res);
-	if (SUCCEEDED(hr))
+	// Make sure we've received valid data
+	if (m_pDepthRGBX && res->pBuffer && res->validFrame)
 	{
-		// Make sure we've received valid data
-		if (m_pDepthRGBX && res->pBuffer && res->validFrame)
+		RGBQUAD* pRGBX = m_pDepthRGBX;
+
+		// end pixel is start + width*height - 1
+		auto pBuffer = res->pBuffer;
+		const UINT16* pBufferEnd = res->pBuffer + (res->nWidth * res->nHeight);
+		int localMax = INT_MIN;
+		while (pBuffer < pBufferEnd)
 		{
-			RGBQUAD* pRGBX = m_pDepthRGBX;
-
-			// end pixel is start + width*height - 1
-			const UINT16* pBufferEnd = res->pBuffer + (res->nWidth * res->nHeight);
-			auto pBuffer = res->pBuffer;
-			int localMax = INT_MIN;
-			while (pBuffer < pBufferEnd)
-			{
-				USHORT depth = *pBuffer;
-				if (depth > localMax)
-					localMax = depth;
-				++pBuffer;
-			}
-
-			pBuffer = res->pBuffer;
-			while (pBuffer < pBufferEnd)
-			{
-				USHORT depth = *pBuffer;
-				float pixelVal = (float)depth / (float)localMax * 256;
-
-				BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? pixelVal : 0);
-
-				pRGBX->rgbRed = intensity;
-				pRGBX->rgbGreen = intensity;
-				pRGBX->rgbBlue = intensity;
-				
-				++pRGBX;
-				++pBuffer;
-			}
-			// Draw the data with Direct2D
-			m_imageRenderer.Draw(reinterpret_cast<BYTE*>(m_pDepthRGBX), res->nWidth * res->nHeight * sizeof(RGBQUAD));
+			USHORT depth = *pBuffer;
+			if (depth > localMax)
+				localMax = depth;
+			++pBuffer;
 		}
+
+		pBuffer = res->pBuffer;
+		while (pBuffer < pBufferEnd)
+		{
+			USHORT depth = *pBuffer;
+			float pixelVal = (float)depth / (float)localMax * 256;
+
+			BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? pixelVal : 0);
+
+			pRGBX->rgbRed = intensity;
+			pRGBX->rgbGreen = intensity;
+			pRGBX->rgbBlue = intensity;
+				
+			++pRGBX;
+			++pBuffer;
+		}
+		// Draw the data with Direct2D
+		m_imageRenderer.Draw(reinterpret_cast<BYTE*>(m_pDepthRGBX), res->nWidth * res->nHeight * sizeof(RGBQUAD));
+		hr = S_OK;
 	}
-	delete res;
-	m_kinectAdapter->releaseSpecificResources();
+	return hr;
+}
+
+HRESULT App::InitiateFileWriters()
+{
+	HRESULT hr = E_FAIL;
+	
+	WCHAR test[19] = L"C:/BuffEnv/res.txt";
+	hr = m_writerDepthMode.Initiate(test, 19);
+
+	return hr;
+}
+
+HRESULT App::ResetFileWriters()
+{
+	HRESULT hr = S_OK;
+	hr = m_writerDepthMode.Reset();
+	return hr;
+}
+
+HRESULT App::WriteKinectData(IKinectData* res)
+{
+	HRESULT hr = E_FAIL;
+	hr = m_writerDepthMode.WriteData(res->pBuffer);
 	return hr;
 }
