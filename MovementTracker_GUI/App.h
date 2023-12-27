@@ -2,13 +2,14 @@
 
 #include "framework.h"
 #include "DepthMode.h"
-#include "ImageRenderer.h"
+#include "SkeletonMode.h"
+#include "KinectRenderer.h"
 #include "FileWriter.h"
 #include "FileReaderDepthMode.h"
 #include <d2d1.h>
 
 using namespace FileWriter;
-using namespace KinectAdapter;
+using namespace KinectAdapters;
 
 class App
 {
@@ -27,7 +28,6 @@ class App
 		HRESULT InitApp();
 
 		//Cyclic app functions
-		HRESULT UpdateKinectImage(DepthModeData* res);
 		HRESULT InitiateFileWriters();
 		HRESULT ResetFileWriters();
 		HRESULT WriteKinectData(DepthModeData* res);
@@ -37,12 +37,15 @@ class App
 		HWND m_hWndOutputFilePath;							// edit text that have file path inside
 		HWND m_hWndChoseOutputFileBtn;						// button for chosing the output file
 		HWND m_hWndStartStopRecordingBtn;					// button for starting/stopping recording
+		HWND m_hWndSwitchViewMode;							// button for switching view mode
 		HINSTANCE m_hInstCurr;								// current instance
 		int m_nCmdShow;										// main window show mode
 		const WCHAR m_appTitle[18] = L"Movement recorder";
+		KinectRenderer m_kinectRenderer;
+
+		//Kinect adapters
 		DepthMode m_depthMode;
-		ImageRenderer m_imageRenderer;
-		RGBQUAD* m_pDepthRGBX;
+		SkeletonMode m_skeletonMode;
 
 		//App window classes
 		const WCHAR m_mainWindowName[10] = L"mainClass";

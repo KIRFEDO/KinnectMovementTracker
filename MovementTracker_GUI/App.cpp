@@ -1,33 +1,41 @@
 #include "App.h"
+#include "SkeletonModeData.h"
 #include "WindowsProcessingFunctions.h"
 #include "WindowIDs.h"
 #include <tuple>
 #include <memory>
 #include "d2d1.h"
 
-using namespace KinectAdapter;
+using namespace KinectAdapters;
 
 App::App(HINSTANCE hInstCurr, int nCmdShow)
 {
-	m_pDepthRGBX = nullptr;
-
 	this->m_hInstCurr = hInstCurr;
 	this->m_nCmdShow = nCmdShow;
+}
+
+App::~App()
+{
 }
 
 HRESULT App::run()
 {
 	HRESULT hr;
 	hr = InitApp();
+	if (FAILED(hr))
+		return hr;
 
 	MSG msg = { 0 };
 
-	// Main message loop:
 	while (WM_QUIT != msg.message)
 	{
-		HRESULT hr = E_FAIL;
-		DepthModeData* res = new DepthModeData();
-		hr = m_depthMode.getCurrentFrame(res);
+		HRESULT hr_depthMode = E_FAIL;
+		HRESULT hr_skeletonMode = E_FAIL;
+
+		DepthModeData* depthModeData = new DepthModeData();
+		hr_depthMode = m_depthMode.getCurrentFrame(depthModeData);
+		SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
+		hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
 		
 		/*{
 			//Snippet for opening one frame from the file below
@@ -43,26 +51,28 @@ HRESULT App::run()
 			hr = S_OK;
 		}*/
 
-		if (SUCCEEDED(hr)) 
-		{
-			UpdateKinectImage(res);
-			switch (RECORD_DATA_FLAG) 
-			{
-				case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
-					//TODO Add header creator
-					InitiateFileWriters();
-					RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
-				case RECORD_DATA_STATE::RECORDING:
-					WriteKinectData(res);
-					break;
-				case RECORD_DATA_STATE::FINISH_RECORDING:
-					//TODO compress all files into zip file. Create file with vector of time
-					ResetFileWriters();
-					RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
-			}
-		}
+		m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+		
+		//TODO add handling of two modes
+		//switch (RECORD_DATA_FLAG) 
+		//{
+		//	case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
+		//		//TODO Add header creator
+		//		InitiateFileWriters();
+		//		RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
+		//	case RECORD_DATA_STATE::RECORDING:
+		//		WriteKinectData(res);
+		//		break;
+		//	case RECORD_DATA_STATE::FINISH_RECORDING:
+		//		//TODO compress all files into zip file. Create file with vector of time
+		//		ResetFileWriters();
+		//		RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+		//}
+
 		m_depthMode.ReleaseSpecificResources();
-		delete res;
+		m_skeletonMode.ReleaseSpecificResources();
+
+		delete depthModeData;
 
 		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -72,11 +82,6 @@ HRESULT App::run()
 	}
 
 	return hr;
-}
-
-App::~App()
-{
-	
 }
 
 HRESULT App::InitAndRegisterWindowClasses()
@@ -126,7 +131,10 @@ HRESULT App::InitGUI()
 		800, 120, 150, 50, m_hWndMain, (HMENU) BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
 	
 	m_hWndStartStopRecordingBtn = CreateWindowW(L"button", L"Start/Stop recording", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		800, 220, 150, 50, m_hWndMain, (HMENU) BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
+		800, 190, 150, 50, m_hWndMain, (HMENU) BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
+	
+	m_hWndSwitchViewMode = CreateWindowW(L"button", L"Switch view mode", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		800, 260, 150, 50, m_hWndMain, (HMENU) BUTTON_SWITCH_VIEW_MODE, m_hInstCurr, nullptr);
 
 	auto res = GetLastError();
 
@@ -143,6 +151,8 @@ HRESULT App::InitKinectAdapters()
 {
 	HRESULT hr;
 	hr = m_depthMode.Init();
+	if (SUCCEEDED(hr))
+		hr = m_skeletonMode.Init();
 	return hr;
 }
 
@@ -154,9 +164,8 @@ HRESULT App::InitKinectRenderer()
 
 	int width, height;
 	std::tie(width, height) = m_depthMode.getFrameSize();
-	m_pDepthRGBX = new RGBQUAD[width * height];
 
-	HRESULT hr = m_imageRenderer.Initialize(m_hWndKinect, m_pD2DFactory, width, height, width * sizeof(RGBQUAD));
+	HRESULT hr = m_kinectRenderer.Init(m_hWndKinect, m_pD2DFactory, width, height, width * sizeof(RGBQUAD));
 	
 	return hr;
 }
@@ -172,48 +181,6 @@ HRESULT App::InitApp()
 	if (SUCCEEDED(hr))
 		hr = InitKinectRenderer();
 
-	return hr;
-}
-
-HRESULT App::UpdateKinectImage(DepthModeData* res)
-{
-	HRESULT hr = E_FAIL;
-	// Make sure we've received valid data
-	if (m_pDepthRGBX && res->pBuffer && res->validFrame)
-	{
-		RGBQUAD* pRGBX = m_pDepthRGBX;
-
-		// end pixel is start + width*height - 1
-		auto pBuffer = res->pBuffer;
-		const UINT16* pBufferEnd = res->pBuffer + (res->nWidth * res->nHeight);
-		int localMax = INT_MIN;
-		while (pBuffer < pBufferEnd)
-		{
-			USHORT depth = *pBuffer;
-			if (depth > localMax)
-				localMax = depth;
-			++pBuffer;
-		}
-
-		pBuffer = res->pBuffer;
-		while (pBuffer < pBufferEnd)
-		{
-			USHORT depth = *pBuffer;
-			float pixelVal = (float)depth / (float)localMax * 256;
-
-			BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? pixelVal : 0);
-
-			pRGBX->rgbRed = intensity;
-			pRGBX->rgbGreen = intensity;
-			pRGBX->rgbBlue = intensity;
-				
-			++pRGBX;
-			++pBuffer;
-		}
-		// Draw the data with Direct2D
-		m_imageRenderer.Draw(reinterpret_cast<BYTE*>(m_pDepthRGBX), res->nWidth * res->nHeight * sizeof(RGBQUAD));
-		hr = S_OK;
-	}
 	return hr;
 }
 

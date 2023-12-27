@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);KinnectAdapter.lib;MovementTrackingFileWriter.lib;MovementTrackingFileReader.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);KinectAdapters.lib;MovementTrackerFileWriters.lib;MovementTrackerFileReaders.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -139,7 +139,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);KinnectAdapter.lib;MovementTrackingFileWriter.lib;MovementTrackingFileReader.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);KinectAdapters.lib;MovementTrackerFileWriters.lib;MovementTrackerFileReaders.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -149,20 +149,16 @@
   <ItemGroup>
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
     <ClInclude Include="App.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Enums.h" />
     <ClInclude Include="WindowIDs.h" />
     <ClInclude Include="WindowsProcessingFunctions.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="ImageRenderer.h" />
+    <ClInclude Include="KinectRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="ImageRenderer.cpp" />
+    <ClCompile Include="KinectRenderer.cpp" />
     <ClCompile Include="MovementTracker_GUI.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="MovementTracker_GUI.ico" />
-    <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

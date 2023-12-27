@@ -2,7 +2,7 @@
 #include "DepthMode.h"
 #include "stdafx.h"
 
-namespace KinectAdapter {
+namespace KinectAdapters {
 
     DepthMode::DepthMode()
     {
@@ -10,24 +10,20 @@ namespace KinectAdapter {
 
     DepthMode::~DepthMode()
     {
+        SafeRelease(m_pDepthFrame);
         SafeRelease(m_pDepthFrameReader);
         if (m_pKinectSensor) {
             m_pKinectSensor->Close();
         }
         SafeRelease(m_pKinectSensor);
-        SafeRelease(m_pDepthFrame);
     }
 
     HRESULT DepthMode::Init()
     {
         HRESULT hr;
         hr = GetDefaultKinectSensor(&m_pKinectSensor);
-        if (FAILED(hr))
-        {
-            throw std::runtime_error("Can`t connect to the kinect sensor");
-        }
 
-        if (m_pKinectSensor)
+        if (SUCCEEDED(hr))
         {
             // Init the Kinect and get the depth reader
             IDepthFrameSource* pDepthFrameSource = NULL;
