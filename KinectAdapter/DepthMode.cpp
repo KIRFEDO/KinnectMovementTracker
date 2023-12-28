@@ -48,7 +48,6 @@ namespace KinectAdapters {
 
     void DepthMode::ReleaseSpecificResources()
     {
-        //TODO properly handle memory allocated by Kinect resources
         SafeRelease(m_pDepthFrame);
         SafeRelease(m_pFrameDescription);
     }

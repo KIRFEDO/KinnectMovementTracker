@@ -73,6 +73,7 @@ HRESULT App::run()
 		m_skeletonMode.ReleaseSpecificResources();
 
 		delete depthModeData;
+		delete skeletonModeData;
 
 		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{

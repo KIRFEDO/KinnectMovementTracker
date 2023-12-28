@@ -312,12 +312,11 @@ HRESULT KinectRenderer::DrawDepthMode(DepthModeData* res)
         // end pixel is start + width*height - 1
         auto pBuffer = res->pBuffer;
         const UINT16* pBufferEnd = res->pBuffer + (cDepthWidth * cDepthHeight);
-        int localMax = INT_MIN;
         while (pBuffer < pBufferEnd)
         {
             USHORT depth = *pBuffer;
-            if (depth > localMax)
-                localMax = depth;
+            if (depth > localDepthMax)
+                localDepthMax = depth;
             ++pBuffer;
         }
 
@@ -325,7 +324,7 @@ HRESULT KinectRenderer::DrawDepthMode(DepthModeData* res)
         while (pBuffer < pBufferEnd)
         {
             USHORT depth = *pBuffer;
-            float pixelVal = (float)depth / (float)localMax * 256;
+            float pixelVal = (float)depth / (float)localDepthMax * 256;
 
             BYTE intensity = static_cast<BYTE>((depth >= res->nDepthMinReliableDistance) && (depth <= res->nDepthMaxDistance) ? pixelVal : 0);
 

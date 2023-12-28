@@ -14,9 +14,9 @@ namespace KinectAdapters
 			void ReleaseSpecificResources();
 
 			HRESULT AcquireLatestFrame();
-			HRESULT RefreshBodies();
+			HRESULT UpdateBodies();
 			HRESULT getCurrentFrame(SkeletonModeData* data);
-			HRESULT getDataForChosenBody(Joint* joints, UINT8 bodyIdx = 0);
+			HRESULT getDataForChosenBody(Joint* joints, UINT8 bodyIdx);
 
 			ICoordinateMapper* getCoordinateMapperPtr() const;
 		private:

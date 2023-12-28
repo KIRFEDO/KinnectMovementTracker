@@ -92,4 +92,6 @@ private:
     void DrawBody(const Joint* pJoints, const D2D1_POINT_2F* pJointPoints);
     void DrawHand(HandState handState, const D2D1_POINT_2F& handPosition);
     void DrawBone(const Joint* pJoints, const D2D1_POINT_2F* pJointPoints, JointType joint0, JointType joint1);
+
+    UINT16 localDepthMax = 0;
 };

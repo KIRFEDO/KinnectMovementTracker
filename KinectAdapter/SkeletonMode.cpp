@@ -54,6 +54,9 @@ namespace KinectAdapters
 
     void SkeletonMode::ReleaseSpecificResources()
     {
+        if(m_ppBodies)
+            for (int i = 0; i < BODY_COUNT; i++)
+                SafeRelease(m_ppBodies[i]);
         SafeRelease(m_pBodyFrame);
     }
 
@@ -62,7 +65,7 @@ namespace KinectAdapters
         return m_pBodyFrameReader->AcquireLatestFrame(&m_pBodyFrame);
     }
 
-    HRESULT SkeletonMode::RefreshBodies()
+    HRESULT SkeletonMode::UpdateBodies()
     {
         return m_pBodyFrame->GetAndRefreshBodyData(BODY_COUNT, m_ppBodies);
     }
@@ -72,10 +75,33 @@ namespace KinectAdapters
         HRESULT hr;
         hr = AcquireLatestFrame();
         if (SUCCEEDED(hr))
-            hr = RefreshBodies();
-        if (SUCCEEDED(hr))
-            hr = getDataForChosenBody(data->joints);
-        return hr;
+            hr = UpdateBodies();
+        
+        if (FAILED(hr))
+            return hr;
+
+        /*
+            For now we need to track only one body.
+            Due to the logic of Kinect SDK tracked person
+            can be put in any of the 6 body slots and
+            that is why for now we are only looking for
+            the tracked slot and do not map it in any way.
+        */
+        INT8 bodyIdx = -1;
+        for (int i = 0; i<BODY_COUNT; i++) {
+            BOOLEAN isTracked;
+            IBody* body = m_ppBodies[i];
+            body->get_IsTracked(&isTracked);
+            if (isTracked) {
+                bodyIdx = i;
+                break;
+            }
+        }
+
+        if (bodyIdx != -1)
+            hr = getDataForChosenBody(data->joints, bodyIdx);
+
+        return bodyIdx != -1 ? S_OK : E_PENDING;
     }
 
     HRESULT SkeletonMode::getDataForChosenBody(Joint* joints, UINT8 bodyIdx)
@@ -84,14 +110,12 @@ namespace KinectAdapters
         IBody* pBody = m_ppBodies[bodyIdx];
         if (!pBody)
             return E_POINTER;
-
-        BOOLEAN bTracked = false;
-        hr = pBody->get_IsTracked(&bTracked);
-        if (SUCCEEDED(hr) && bTracked) {
-            hr = pBody->GetJoints(BODY_COUNT, joints);
-        }
-
+        
+        hr = pBody->GetJoints(JointType_Count, joints);
+        
+        return hr;
     }
+
     ICoordinateMapper* SkeletonMode::getCoordinateMapperPtr() const
     {
         return m_pCoordinateMapper;
