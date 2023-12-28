@@ -4,6 +4,15 @@
     <ClCompile Include="DepthMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SkeletonMode.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonModeData.h">
+      <Filter>DataStructures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DepthMode.h">
@@ -13,18 +22,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DepthModeData.h">
-      <Filter>Header Files</Filter>
+      <Filter>DataStructures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Interfaces">
-      <UniqueIdentifier>{08e9ff90-13d5-47b7-a51f-b9fc242014cc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{9ba22ebb-57a8-4de3-98f9-b562696e84e1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{ac5644ad-a354-4377-96ed-055d3c89b663}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStructures">
+      <UniqueIdentifier>{e2d2bcaf-8f8f-48e8-b5a1-040864b810bb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

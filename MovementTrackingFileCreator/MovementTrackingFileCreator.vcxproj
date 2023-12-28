@@ -24,7 +24,7 @@
     <ProjectGuid>{c6937eab-4a63-4489-9b80-e196ecb7bab1}</ProjectGuid>
     <RootNamespace>MovementTrackingFileCreator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>MovementTrackingFileWriter</ProjectName>
+    <ProjectName>MovementTrackerFileWriters</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

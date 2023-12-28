@@ -2,15 +2,9 @@
 #include "framework.h"
 #include "stdafx.h"
 #include "WindowIDs.h"
+#include "Enums.h"
 
-enum RECORD_DATA_STATE
-{
-    DO_NOT_RECORD,
-    INITIATE_FILE_HANDLES,
-    RECORDING,
-    FINISH_RECORDING
-};
-
+VIEW_MODE VIEW_MODE_FLAG = VIEW_MODE::DEPTH;
 RECORD_DATA_STATE RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
 
 void handleButtonChoseFile(int notificationCode)
@@ -33,6 +27,22 @@ void handleButtonStartStopRecording(int notificationCode)
         }
     }
     return;
+}
+
+void handleButtonSwitchViewMode(int notificationCode)
+{
+    if (notificationCode == BN_CLICKED)
+    {
+        switch (VIEW_MODE_FLAG)
+        {
+            case VIEW_MODE::DEPTH:
+                VIEW_MODE_FLAG = VIEW_MODE::SKELETON;
+                break;
+            case VIEW_MODE::SKELETON:
+                VIEW_MODE_FLAG = VIEW_MODE::DEPTH;
+                break;
+        }
+    }
 }
 
 LRESULT CALLBACK MainWindowProcessor(
@@ -74,6 +84,11 @@ LRESULT CALLBACK MainWindowProcessor(
                 case BUTTON_START_STOP_RECORDING:
                 {
                     handleButtonStartStopRecording(notificationCode);
+                    return 0;
+                }
+                case BUTTON_SWITCH_VIEW_MODE:
+                {
+                    handleButtonSwitchViewMode(notificationCode);
                     return 0;
                 }
             }

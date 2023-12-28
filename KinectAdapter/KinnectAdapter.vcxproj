@@ -24,7 +24,7 @@
     <ProjectGuid>{9f993f71-df1f-4f90-a58a-b6583398ee31}</ProjectGuid>
     <RootNamespace>MovementTrackerCore</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>KinnectAdapter</ProjectName>
+    <ProjectName>KinectAdapters</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -158,6 +158,9 @@ if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepthMode.cpp" />
+    <ClCompile Include="SkeletonMode.cpp" />
+    <ClCompile Include="SkeletonMode.h" />
+    <ClCompile Include="SkeletonModeData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
