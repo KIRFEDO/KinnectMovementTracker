@@ -2,7 +2,7 @@
 #include "DepthMode.h"
 #include "stdafx.h"
 
-namespace KinectAdapter {
+namespace KinectAdapters {
 
     DepthMode::DepthMode()
     {
@@ -10,26 +10,22 @@ namespace KinectAdapter {
 
     DepthMode::~DepthMode()
     {
+        SafeRelease(m_pDepthFrame);
         SafeRelease(m_pDepthFrameReader);
         if (m_pKinectSensor) {
             m_pKinectSensor->Close();
         }
         SafeRelease(m_pKinectSensor);
-        SafeRelease(m_pDepthFrame);
     }
 
-    HRESULT DepthMode::initiateKinectConnection()
+    HRESULT DepthMode::Init()
     {
         HRESULT hr;
         hr = GetDefaultKinectSensor(&m_pKinectSensor);
-        if (FAILED(hr))
-        {
-            throw std::runtime_error("Can`t connect to the kinect sensor");
-        }
 
-        if (m_pKinectSensor)
+        if (SUCCEEDED(hr))
         {
-            // Initialize the Kinect and get the depth reader
+            // Init the Kinect and get the depth reader
             IDepthFrameSource* pDepthFrameSource = NULL;
 
             hr = m_pKinectSensor->Open();
@@ -50,9 +46,8 @@ namespace KinectAdapter {
         return hr;
     }
 
-    void DepthMode::releaseSpecificResources()
+    void DepthMode::ReleaseSpecificResources()
     {
-        //TODO properly handle memory allocated by Kinect resources
         SafeRelease(m_pDepthFrame);
         SafeRelease(m_pFrameDescription);
     }
@@ -62,7 +57,7 @@ namespace KinectAdapter {
         return std::pair<int, int>(m_width, m_height);
     }
 
-    HRESULT DepthMode::getCurrentFrame(IKinectData* pKinectDepthData)
+    HRESULT DepthMode::getCurrentFrame(DepthModeData* pDepthModeData)
     {
         HRESULT hr = m_pDepthFrameReader->AcquireLatestFrame(&m_pDepthFrame);
 
@@ -118,9 +113,9 @@ namespace KinectAdapter {
                 validFrame = true;
             }
 
-            IKinectData res(nTime, pBuffer, nWidth, nHeight, 
+            DepthModeData res(nTime, pBuffer, nWidth, nHeight,
                             nDepthMinReliableDistance, nDepthMaxDistance, validFrame);
-            *pKinectDepthData = res;
+            *pDepthModeData = res;
         }
         return hr;
     }

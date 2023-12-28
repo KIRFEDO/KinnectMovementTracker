@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTracker_GUI", "Move
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinnectAdapter", "..\KinectAdapter\KinnectAdapter.vcxproj", "{9F993F71-DF1F-4F90-A58A-B6583398EE31}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTrackingFileWriter", "..\MovementTrackingFileCreator\MovementTrackingFileCreator.vcxproj", "{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTrackingFileReader", "..\MovementTrackingFileReader\MovementTrackingFileReader.vcxproj", "{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +35,22 @@ Global
 		{9F993F71-DF1F-4F90-A58A-B6583398EE31}.Release|x64.Build.0 = Release|x64
 		{9F993F71-DF1F-4F90-A58A-B6583398EE31}.Release|x86.ActiveCfg = Release|Win32
 		{9F993F71-DF1F-4F90-A58A-B6583398EE31}.Release|x86.Build.0 = Release|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x64.ActiveCfg = Debug|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x64.Build.0 = Debug|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x86.ActiveCfg = Debug|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x86.Build.0 = Debug|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x64.ActiveCfg = Release|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x64.Build.0 = Release|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x86.ActiveCfg = Release|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x86.Build.0 = Release|Win32
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x64.ActiveCfg = Debug|x64
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x64.Build.0 = Debug|x64
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x86.ActiveCfg = Debug|Win32
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x86.Build.0 = Debug|Win32
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x64.ActiveCfg = Release|x64
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x64.Build.0 = Release|x64
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x86.ActiveCfg = Release|Win32
+		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

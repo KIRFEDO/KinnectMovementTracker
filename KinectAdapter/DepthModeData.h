@@ -3,7 +3,7 @@
 
 typedef unsigned short USHORT;
 
-struct __declspec(dllexport) IKinectData {
+struct __declspec(dllexport) DepthModeData {
     INT64 nTime;
     UINT16* pBuffer;
     int nWidth;
@@ -12,7 +12,7 @@ struct __declspec(dllexport) IKinectData {
     USHORT nDepthMaxDistance;
     bool validFrame;
 
-    IKinectData(
+    DepthModeData(
         INT64 nTime,
         UINT16* pBuffer,
         int nWidth,
@@ -30,5 +30,5 @@ struct __declspec(dllexport) IKinectData {
         this->validFrame = validFrame;
     }
 
-    IKinectData() {};
+    DepthModeData() {};
 };
