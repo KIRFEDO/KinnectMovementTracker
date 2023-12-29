@@ -54,20 +54,21 @@ HRESULT App::run()
 		m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
 		
 		//TODO add handling of two modes
-		//switch (RECORD_DATA_FLAG) 
-		//{
-		//	case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
-		//		//TODO Add header creator
-		//		InitiateFileWriters();
-		//		RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
-		//	case RECORD_DATA_STATE::RECORDING:
-		//		WriteKinectData(res);
-		//		break;
-		//	case RECORD_DATA_STATE::FINISH_RECORDING:
-		//		//TODO compress all files into zip file. Create file with vector of time
-		//		ResetFileWriters();
-		//		RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
-		//}
+		switch (RECORD_DATA_FLAG) 
+		{
+			case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
+				//TODO Add header creator
+				CreateHeaderFile();
+				InitiateFileWriters();
+				RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
+			case RECORD_DATA_STATE::RECORDING:
+				WriteKinectData(depthModeData);
+				break;
+			case RECORD_DATA_STATE::FINISH_RECORDING:
+				//TODO compress all files into zip file. Create file with vector of time
+				ResetFileWriters();
+				RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+		}
 
 		m_depthMode.ReleaseSpecificResources();
 		m_skeletonMode.ReleaseSpecificResources();
@@ -119,31 +120,74 @@ HRESULT App::InitGUI()
 	m_hWndMain = CreateWindowW(m_mainWindowName, m_appTitle, WS_OVERLAPPEDWINDOW,
 		0, 0, 1280, 700, nullptr, nullptr, m_hInstCurr, nullptr);
 
-	int width, height;
-	std::tie(width, height) = m_depthMode.getFrameSize();
-
 	m_hWndKinect = CreateWindowW(m_kinectViewWindowName, (LPCTSTR)NULL, WS_CHILD | WS_VISIBLE,
-		0, 0, 640, 700, m_hWndMain, nullptr, m_hInstCurr, nullptr);
-	
-	m_hWndOutputFilePath = CreateWindowW(L"edit", L"Hint?", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-		800, 50, 250, 20, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
-	
-	m_hWndChoseOutputFileBtn = CreateWindowW(L"button", L"Chose output file", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		800, 120, 150, 50, m_hWndMain, (HMENU) BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
-	
-	m_hWndStartStopRecordingBtn = CreateWindowW(L"button", L"Start/Stop recording", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		800, 190, 150, 50, m_hWndMain, (HMENU) BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
-	
-	m_hWndSwitchViewMode = CreateWindowW(L"button", L"Switch view mode", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		800, 260, 150, 50, m_hWndMain, (HMENU) BUTTON_SWITCH_VIEW_MODE, m_hInstCurr, nullptr);
+		25, 25, 500, 500, m_hWndMain, nullptr, m_hInstCurr, nullptr);
 
-	auto res = GetLastError();
+	HRESULT hr;
 
-	if (!m_hWndMain)
+	hr = InitStatic();
+	if(SUCCEEDED(hr))
+		hr = InitEdit();
+	if (SUCCEEDED(hr))
+		hr = InitButtons();	
+	
+	ShowWindow(m_hWndMain, m_nCmdShow) ? S_OK : E_FAIL;
+
+	return hr;
+}
+
+HRESULT App::InitStatic()
+{
+	m_hWndStaticPatientName = CreateWindowW(L"static", L"Patient name:", WS_CHILD | WS_VISIBLE | SS_LEFT,
+		staticXOffset, 25, staticXWidth, 25, m_hWndMain, (HMENU)STATIC_PATIENT_NAME, m_hInstCurr, nullptr);
+	
+	m_hWndStaticAdditonalInfo = CreateWindowW(L"static", L"Additional info:", WS_CHILD | WS_VISIBLE | SS_LEFT,
+		staticXOffset, 75, staticXWidth, 250, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+	
+	m_hWndStaticFilePath = CreateWindowW(L"static", L"File path:", WS_CHILD | WS_VISIBLE | SS_LEFT,
+		staticXOffset, 350, staticXWidth, 25, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+
+	if (!(m_hWndStaticPatientName &&
+		m_hWndStaticAdditonalInfo &&
+		m_hWndStaticFilePath))
 		return E_HANDLE;
 
-	ShowWindow(m_hWndMain, m_nCmdShow);
-	UpdateWindow(m_hWndMain);
+	return S_OK;
+}
+
+HRESULT App::InitEdit()
+{
+	m_hWndEditPatientName = CreateWindowW(L"edit", L"Patient name", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+		editXOffset, 25, editXWidth, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
+
+	m_hWndEditAdditionalInfo = CreateWindowW(L"edit", L"Additional info", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOVSCROLL | ES_MULTILINE | ES_LEFT | WS_VSCROLL,
+		editXOffset, 75, editXWidth, 250, m_hWndMain, (HMENU)EDIT_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+
+	m_hWndEditOutputFilePath = CreateWindowW(L"edit", L"File path", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+		editXOffset, 350, editXWidth, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
+
+	if (!(m_hWndEditPatientName &&
+		m_hWndEditAdditionalInfo))
+		return E_HANDLE;
+
+	return S_OK;
+}
+
+HRESULT App::InitButtons()
+{
+	m_hWndBtnChoseOutputFile = CreateWindowW(L"button", L"Chose output file", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		editXOffset, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
+
+	m_hWndBtnStartStopRecording = CreateWindowW(L"button", L"Start/Stop recording", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		editXOffset+140+25, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
+
+	m_hWndBtnSwitchViewMode = CreateWindowW(L"button", L"Switch view mode", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		25, 550, 150, 50, m_hWndMain, (HMENU)BUTTON_SWITCH_VIEW_MODE, m_hInstCurr, nullptr);
+
+	if (!(m_hWndBtnChoseOutputFile &&
+		m_hWndBtnStartStopRecording &&
+		m_hWndBtnSwitchViewMode))
+		return E_HANDLE;
 
 	return S_OK;
 }
@@ -200,6 +244,12 @@ HRESULT App::ResetFileWriters()
 	HRESULT hr = S_OK;
 	hr = m_writerDepthMode.Reset();
 	return hr;
+}
+
+HRESULT App::CreateHeaderFile()
+{
+
+	return E_NOTIMPL;
 }
 
 HRESULT App::WriteKinectData(DepthModeData* res)

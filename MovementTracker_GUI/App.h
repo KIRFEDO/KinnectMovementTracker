@@ -23,6 +23,9 @@ class App
 		//Initializers
 		HRESULT InitAndRegisterWindowClasses();
 		HRESULT InitGUI();
+		HRESULT InitStatic();
+		HRESULT InitEdit();
+		HRESULT InitButtons();
 		HRESULT InitKinectAdapters();
 		HRESULT InitKinectRenderer();
 		HRESULT InitApp();
@@ -30,14 +33,32 @@ class App
 		//Cyclic app functions
 		HRESULT InitiateFileWriters();
 		HRESULT ResetFileWriters();
+		HRESULT CreateHeaderFile();
 		HRESULT WriteKinectData(DepthModeData* res);
 
 		HWND m_hWndMain;									// main window
 		HWND m_hWndKinect;									// window for kinect rendering
-		HWND m_hWndOutputFilePath;							// edit text that have file path inside
-		HWND m_hWndChoseOutputFileBtn;						// button for chosing the output file
-		HWND m_hWndStartStopRecordingBtn;					// button for starting/stopping recording
-		HWND m_hWndSwitchViewMode;							// button for switching view mode
+
+		HWND m_hWndEditOutputFilePath;						// target file path
+		HWND m_hWndEditPatientName;							// patient name
+		HWND m_hWndEditAdditionalInfo;						// additional info
+
+		HWND m_hWndBtnChoseOutputFile;						// chosing the output file
+		HWND m_hWndBtnStartStopRecording;					// starting/stopping recording
+		HWND m_hWndBtnSwitchViewMode;						// switching view mode
+
+		HWND m_hWndStaticPatientName;						// patient name
+		HWND m_hWndStaticAdditonalInfo;						// additional info
+		HWND m_hWndStaticFilePath;							// file path
+
+		//App offsets
+		// //Static
+		const UINT16 staticXOffset = 550;
+		const UINT16 staticXWidth = 150;
+		// //Edit
+		const UINT16 editXOffset = staticXOffset + staticXWidth;
+		const UINT16 editXWidth = 300;
+
 		HINSTANCE m_hInstCurr;								// current instance
 		int m_nCmdShow;										// main window show mode
 		const WCHAR m_appTitle[18] = L"Movement recorder";
