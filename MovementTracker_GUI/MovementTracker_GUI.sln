@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTracker_GUI", "MovementTracker_GUI.vcxproj", "{080C690C-0142-48B6-BA66-377E96FD8694}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTrackerApp", "MovementTracker_GUI.vcxproj", "{080C690C-0142-48B6-BA66-377E96FD8694}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinnectAdapter", "..\KinectAdapter\KinnectAdapter.vcxproj", "{9F993F71-DF1F-4F90-A58A-B6583398EE31}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectAdapters", "..\KinectAdapters\KinnectAdapter.vcxproj", "{9F993F71-DF1F-4F90-A58A-B6583398EE31}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTrackingFileWriter", "..\MovementTrackingFileCreator\MovementTrackingFileCreator.vcxproj", "{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Renderers", "..\Renderers\Renderers.vcxproj", "{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MovementTrackingFileReader", "..\MovementTrackingFileReader\MovementTrackingFileReader.vcxproj", "{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataReaders", "..\FileReaders\MovementTrackingFileReader.vcxproj", "{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataWriters", "..\FileWriters\MovementTrackingFileCreator.vcxproj", "{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,14 +37,14 @@ Global
 		{9F993F71-DF1F-4F90-A58A-B6583398EE31}.Release|x64.Build.0 = Release|x64
 		{9F993F71-DF1F-4F90-A58A-B6583398EE31}.Release|x86.ActiveCfg = Release|Win32
 		{9F993F71-DF1F-4F90-A58A-B6583398EE31}.Release|x86.Build.0 = Release|Win32
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x64.ActiveCfg = Debug|x64
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x64.Build.0 = Debug|x64
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x86.ActiveCfg = Debug|Win32
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x86.Build.0 = Debug|Win32
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x64.ActiveCfg = Release|x64
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x64.Build.0 = Release|x64
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x86.ActiveCfg = Release|Win32
-		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x86.Build.0 = Release|Win32
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Debug|x64.ActiveCfg = Debug|x64
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Debug|x64.Build.0 = Debug|x64
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Debug|x86.ActiveCfg = Debug|Win32
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Debug|x86.Build.0 = Debug|Win32
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Release|x64.ActiveCfg = Release|x64
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Release|x64.Build.0 = Release|x64
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Release|x86.ActiveCfg = Release|Win32
+		{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}.Release|x86.Build.0 = Release|Win32
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x64.ActiveCfg = Debug|x64
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x64.Build.0 = Debug|x64
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Debug|x86.ActiveCfg = Debug|Win32
@@ -51,6 +53,14 @@ Global
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x64.Build.0 = Release|x64
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x86.ActiveCfg = Release|Win32
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}.Release|x86.Build.0 = Release|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x64.ActiveCfg = Debug|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x64.Build.0 = Debug|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x86.ActiveCfg = Debug|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Debug|x86.Build.0 = Debug|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x64.ActiveCfg = Release|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x64.Build.0 = Release|x64
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x86.ActiveCfg = Release|Win32
+		{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

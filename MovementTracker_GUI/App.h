@@ -4,12 +4,15 @@
 #include "DepthMode.h"
 #include "SkeletonMode.h"
 #include "KinectRenderer.h"
-#include "FileWriter.h"
+#include "FileWriters.h"
 #include "FileReaderDepthMode.h"
+#include "KinectRenderer.h"
 #include <d2d1.h>
+#include <chrono>
 
-using namespace FileWriter;
+using namespace FileWriters;
 using namespace KinectAdapters;
+using namespace Renderers;
 
 class App
 {
@@ -31,10 +34,18 @@ class App
 		HRESULT InitApp();
 
 		//Cyclic app functions
-		HRESULT InitiateFileWriters();
-		HRESULT ResetFileWriters();
+		HRESULT HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
+									DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData);
+
+		//Recording functions
+		HRESULT InitFileWriters();
+		HRESULT InitRecordingCounters();
 		HRESULT CreateHeaderFile();
-		HRESULT WriteKinectData(DepthModeData* res);
+		HRESULT ResetFileWriters();
+		HRESULT WriteDepthModeData(DepthModeData* depthModeData, HRESULT hr_depthMode);
+		HRESULT WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT hr_skeletonMode);
+
+		time_t GetTimeFromRecordingStart();
 
 		HWND m_hWndMain;									// main window
 		HWND m_hWndKinect;									// window for kinect rendering
@@ -76,9 +87,15 @@ class App
 		WNDCLASS m_kinectViewWindow;
 
 		//Writers
-		FileWriterDepthMode m_writerDepthMode;
+		FileWriter m_writerDepthMode;
+		FileWriter m_writerSkeletonMode;
 
 		//Readers
 		FileReaderDepthMode m_readerDepthMode;
+
+		//Recording data
+		size_t m_counterDepthModeFrames;
+		size_t m_counterSkeletonModeFrames;
+		std::chrono::time_point<std::chrono::system_clock> m_recordingStartTime;
 };
 

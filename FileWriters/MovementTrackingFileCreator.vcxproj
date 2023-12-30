@@ -24,7 +24,7 @@
     <ProjectGuid>{c6937eab-4a63-4489-9b80-e196ecb7bab1}</ProjectGuid>
     <RootNamespace>MovementTrackingFileCreator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>MovementTrackerFileWriters</ProjectName>
+    <ProjectName>KinectDataWriters</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -159,10 +159,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
-    <ClInclude Include="FileWriter.h" />
+    <ClInclude Include="FileWriters.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FileWriter.cpp" />
+    <ClCompile Include="FileWriters.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

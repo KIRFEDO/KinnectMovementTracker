@@ -51,24 +51,9 @@ HRESULT App::run()
 			hr = S_OK;
 		}*/
 
-		m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
 		
-		//TODO add handling of two modes
-		switch (RECORD_DATA_FLAG) 
-		{
-			case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
-				//TODO Add header creator
-				CreateHeaderFile();
-				InitiateFileWriters();
-				RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
-			case RECORD_DATA_STATE::RECORDING:
-				WriteKinectData(depthModeData);
-				break;
-			case RECORD_DATA_STATE::FINISH_RECORDING:
-				//TODO compress all files into zip file. Create file with vector of time
-				ResetFileWriters();
-				RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
-		}
+		m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+		HandleDataRecording(RECORD_DATA_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
 
 		m_depthMode.ReleaseSpecificResources();
 		m_skeletonMode.ReleaseSpecificResources();
@@ -229,32 +214,98 @@ HRESULT App::InitApp()
 	return hr;
 }
 
-HRESULT App::InitiateFileWriters()
+HRESULT App::InitRecordingCounters()
+{
+	m_counterDepthModeFrames = 0;
+	m_counterSkeletonModeFrames = 0;
+	m_recordingStartTime = std::chrono::system_clock::now();
+	return S_OK;
+}
+
+HRESULT App::InitFileWriters()
 {
 	HRESULT hr = E_FAIL;
 	
-	WCHAR test[19] = L"C:/BuffEnv/res.txt";
-	hr = m_writerDepthMode.Initiate(test, 19);
+	WCHAR dmPath[21] = L"C:/BuffEnv/depth.txt";
+	WCHAR smPath[20] = L"C:/BuffEnv/skel.txt";
+	hr = m_writerDepthMode.Init(dmPath);
+	hr = m_writerSkeletonMode.Init(smPath);
 
 	return hr;
+}
+
+HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode, 
+								DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData)
+{
+	switch (recordingState)
+	{
+		case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
+			InitRecordingCounters();
+			InitFileWriters();
+			CreateHeaderFile();
+			RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
+		case RECORD_DATA_STATE::RECORDING:
+			WriteDepthModeData(pDepthModeData, hr_depthMode);
+			WriteSkeletonModeData(pSkeletonModeData, hr_skeletonMode);
+			break;
+		case RECORD_DATA_STATE::FINISH_RECORDING:
+			ResetFileWriters();
+			RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+	}
+
+	return S_OK;
 }
 
 HRESULT App::ResetFileWriters()
 {
 	HRESULT hr = S_OK;
 	hr = m_writerDepthMode.Reset();
+	hr = m_writerSkeletonMode.Reset();
 	return hr;
+}
+
+HRESULT App::WriteDepthModeData(DepthModeData* depthModeData, HRESULT hr_depthMode)
+{
+	HRESULT hr = hr_depthMode;
+	if (SUCCEEDED(hr))
+	{
+		m_counterDepthModeFrames += 1;
+		FrameData* data = new DepthModeFrameData(reinterpret_cast<const char*>(depthModeData->pBuffer), GetTimeFromRecordingStart());
+		hr = m_writerDepthMode.WriteFrame(data);
+		delete data;
+	}
+
+	return hr;
+}
+
+HRESULT App::WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT hr_depthMode)
+{
+	HRESULT hr = hr_depthMode;
+	if (SUCCEEDED(hr))
+	{
+		m_counterSkeletonModeFrames += 1;
+		FrameData* data = new SkeletonModeFrameData(reinterpret_cast<const char*>(skeletonModeData->joints), GetTimeFromRecordingStart());
+		hr = m_writerSkeletonMode.WriteFrame(data);
+		delete data;
+	}
+
+	return hr;
+}
+
+time_t App::GetTimeFromRecordingStart()
+{
+	auto const now = std::chrono::system_clock::now();
+	auto const diff = now - m_recordingStartTime;
+	/*
+		This division is performed due to the win32 limitations.
+		Diff is reprenting time difference in 10^-7 seconds. On 32bit system
+		max value of size_t is 4294967295 which is 429 secunds ~ 7 min. In order 
+		to extend this limit we are limiting precision to 10^-3. 
+	*/
+	return diff.count() / 10000;
 }
 
 HRESULT App::CreateHeaderFile()
 {
-
 	return E_NOTIMPL;
-}
-
-HRESULT App::WriteKinectData(DepthModeData* res)
-{
-	HRESULT hr = E_FAIL;
-	hr = m_writerDepthMode.WriteData(res->pBuffer);
-	return hr;
 }

@@ -120,4 +120,9 @@ namespace KinectAdapters {
         return hr;
     }
 
+    size_t DepthMode::GetSingleFrameSize()
+    {
+        return m_width * m_height * sizeof(UINT16);
+    }
+
 }

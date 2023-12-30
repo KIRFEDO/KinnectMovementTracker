@@ -18,12 +18,12 @@
     <ClInclude Include="..\MovementTracker_inc\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileWriter.h">
+    <ClInclude Include="FileWriters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FileWriter.cpp">
+    <ClCompile Include="FileWriters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
