@@ -18,6 +18,8 @@ namespace KinectAdapters
 			std::pair<int, int> getFrameSize() const;
 			HRESULT getCurrentFrame(DepthModeData* pKinectDepthData);
 
+			size_t GetSingleFrameSize();
+
 		private:
 			const int m_width = 512;
 			const int m_height = 424;

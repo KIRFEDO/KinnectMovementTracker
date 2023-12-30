@@ -1,0 +1,16 @@
+#pragma once
+
+//Buttons
+#define BUTTON_CHOOSE_FILE				101
+#define BUTTON_START_STOP_RECORDING		102
+#define BUTTON_SWITCH_VIEW_MODE			103
+ 
+//Edit
+#define EDIT_FILE_PATH					201
+#define EDIT_PATIENT_NAME				202
+#define EDIT_ADDITIONAL_INFO			203
+
+//Static
+#define STATIC_PATIENT_NAME				301
+#define STATIC_ADDITIONAL_INFO			302
+#define STATIC_FILE_PATH				303
