@@ -226,10 +226,17 @@ HRESULT App::InitFileWriters()
 {
 	HRESULT hr = E_FAIL;
 	
+	WCHAR mdPath[24] = L"C:/BuffEnv/metadata.txt";
 	WCHAR dmPath[21] = L"C:/BuffEnv/depth.txt";
 	WCHAR smPath[20] = L"C:/BuffEnv/skel.txt";
-	hr = m_writerDepthMode.Init(dmPath);
-	hr = m_writerSkeletonMode.Init(smPath);
+	hr = m_writerMetadata.Init(mdPath);
+	if(SUCCEEDED(hr))
+		hr = m_writerDepthMode.Init(dmPath);
+	if(SUCCEEDED(hr))
+		hr = m_writerSkeletonMode.Init(smPath);
+	
+	if (FAILED(hr))
+		ResetFileWriters();
 
 	return hr;
 }
@@ -249,6 +256,7 @@ HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_de
 			WriteSkeletonModeData(pSkeletonModeData, hr_skeletonMode);
 			break;
 		case RECORD_DATA_STATE::FINISH_RECORDING:
+			WriteCounters();
 			ResetFileWriters();
 			RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
 	}
@@ -261,6 +269,7 @@ HRESULT App::ResetFileWriters()
 	HRESULT hr = S_OK;
 	hr = m_writerDepthMode.Reset();
 	hr = m_writerSkeletonMode.Reset();
+	hr = m_writerMetadata.Reset();
 	return hr;
 }
 
@@ -290,6 +299,11 @@ HRESULT App::WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT h
 	}
 
 	return hr;
+}
+
+HRESULT App::WriteCounters()
+{
+	return m_writerMetadata.WriteFrameCounters(m_counterDepthModeFrames, m_counterSkeletonModeFrames);
 }
 
 time_t App::GetTimeFromRecordingStart()

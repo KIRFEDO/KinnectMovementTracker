@@ -44,6 +44,7 @@ class App
 		HRESULT ResetFileWriters();
 		HRESULT WriteDepthModeData(DepthModeData* depthModeData, HRESULT hr_depthMode);
 		HRESULT WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT hr_skeletonMode);
+		HRESULT WriteCounters();
 
 		time_t GetTimeFromRecordingStart();
 
@@ -87,8 +88,9 @@ class App
 		WNDCLASS m_kinectViewWindow;
 
 		//Writers
-		FileWriter m_writerDepthMode;
-		FileWriter m_writerSkeletonMode;
+		MetadataWriter m_writerMetadata;
+		KinectWriter m_writerDepthMode;
+		KinectWriter m_writerSkeletonMode;
 
 		//Readers
 		FileReaderDepthMode m_readerDepthMode;

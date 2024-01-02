@@ -3,18 +3,18 @@
 
 namespace FileWriters {
 
-    FileWriter::FileWriter()
+    KinectWriter::KinectWriter()
     {
         isInitiated = false;
     }
 
-    FileWriter::~FileWriter()
+    KinectWriter::~KinectWriter()
     {
         if (IsInit())
             os.close();
     }
 
-    HRESULT FileWriter::Init(WCHAR* targetDir)
+    HRESULT KinectWriter::Init(WCHAR* targetDir)
     {
         HRESULT hr = S_OK;
 
@@ -33,7 +33,7 @@ namespace FileWriters {
         return hr;
     }
 
-    HRESULT FileWriter::Reset()
+    HRESULT KinectWriter::Reset()
     {
         HRESULT hr = S_OK;
         if (!isInitiated)
@@ -46,16 +46,79 @@ namespace FileWriters {
         return hr;
     }
 
-    BOOL FileWriter::IsInit() const {
+    BOOL KinectWriter::IsInit() const {
         return isInitiated;
     }
 
-    HRESULT FileWriter::WriteFrame(FrameData* pData)
+    HRESULT KinectWriter::WriteFrame(FrameData* pData)
     {
         if (!IsInit())
             return E_NOT_VALID_STATE;
         
         os.write(reinterpret_cast<char const*> (pData->pBuffer), pData->dataSize);
         os.write(reinterpret_cast<char const*> (&(pData->timestamp)), sizeof(time_t));
+    }
+
+    MetadataWriter::MetadataWriter()
+    {
+        isInitiated = FALSE;
+    }
+
+    MetadataWriter::~MetadataWriter()
+    {
+        if (IsInit())
+            os.close();
+    }
+
+    HRESULT MetadataWriter::Init(WCHAR* targetDir)
+    {
+        HRESULT hr = S_OK;
+
+        if (isInitiated)
+            hr = E_NOT_VALID_STATE;
+
+        if (SUCCEEDED(hr))
+        {
+            os.open(targetDir, std::ios::out | std::ios::binary | std::ios::app);
+            hr = os.is_open() ? S_OK : E_HANDLE;
+        }
+
+        if (SUCCEEDED(hr))
+            isInitiated = true;
+
+        return hr;
+    }
+
+    HRESULT MetadataWriter::Reset()
+    {
+        HRESULT hr = S_OK;
+        if (!IsInit())
+            hr = E_NOT_VALID_STATE;
+        if (SUCCEEDED(hr))
+        {
+            isInitiated = false;
+            os.close();
+        }
+        return hr;
+    }
+
+    HRESULT MetadataWriter::WriteFrameCounters(size_t counterDepthMode, size_t counterSkeletonMode)
+    {
+        try
+        {
+            os.write(reinterpret_cast<const char*>(&counterDepthMode), sizeof(size_t));
+            os.write(reinterpret_cast<const char*>(&counterSkeletonMode), sizeof(size_t));
+        }
+        catch (...)
+        {
+            return E_FAIL;
+        }
+
+        return S_OK;
+    }
+
+    BOOL MetadataWriter::IsInit() const
+    {
+        return isInitiated;
     }
 }
