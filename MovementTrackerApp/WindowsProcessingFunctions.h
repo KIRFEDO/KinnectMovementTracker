@@ -6,13 +6,14 @@
 
 VIEW_MODE VIEW_MODE_FLAG = VIEW_MODE::DEPTH;
 RECORD_DATA_STATE RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+APP_MODE APP_MODE_FLAG = APP_MODE::LIVE;
 
-void handleButtonChoseFile(int notificationCode)
+void OnClickChoseFile(int notificationCode)
 {
     return;
 }
 
-void handleButtonStartStopRecording(int notificationCode)
+void OnClickStartStopRecording(int notificationCode)
 {
     if (notificationCode == BN_CLICKED)
     {
@@ -29,7 +30,7 @@ void handleButtonStartStopRecording(int notificationCode)
     return;
 }
 
-void handleButtonSwitchViewMode(int notificationCode)
+void OnClickSwitchViewMode(int notificationCode)
 {
     if (notificationCode == BN_CLICKED)
     {
@@ -42,6 +43,27 @@ void handleButtonSwitchViewMode(int notificationCode)
                 VIEW_MODE_FLAG = VIEW_MODE::DEPTH;
                 break;
         }
+    }
+}
+
+void OnClickSwitchAppMode(int notificationCode, HWND hwnd)
+{
+    if (notificationCode == BN_CLICKED)
+    {
+        switch (APP_MODE_FLAG)
+        {
+            case APP_MODE::LIVE:
+                APP_MODE_FLAG = APP_MODE::READING;
+                break;
+            case APP_MODE::READING:
+                APP_MODE_FLAG = APP_MODE::LIVE;
+                break;
+        }
+        auto staticAppMode = GetDlgItem(hwnd, STATIC_APP_MODE);
+        std::wstring wstr_1 = L"Current mode: ";
+        std::wstring wstr_2 = ToWString(APP_MODE_FLAG);
+        auto res = wstr_1 + wstr_2;
+        SetWindowTextW(staticAppMode, res.c_str());
     }
 }
 
@@ -78,19 +100,22 @@ LRESULT CALLBACK MainWindowProcessor(
             {
                 case BUTTON_CHOOSE_FILE:
                 {
-                    handleButtonChoseFile(notificationCode);
+                    OnClickChoseFile(notificationCode);
                     return 0;
                 }
                 case BUTTON_START_STOP_RECORDING:
                 {
-                    handleButtonStartStopRecording(notificationCode);
+                    OnClickStartStopRecording(notificationCode);
                     return 0;
                 }
                 case BUTTON_SWITCH_VIEW_MODE:
                 {
-                    handleButtonSwitchViewMode(notificationCode);
+                    OnClickSwitchViewMode(notificationCode);
                     return 0;
                 }
+                case BUTTON_SWITCH_APP_MODE:
+                    OnClickSwitchAppMode(notificationCode, hwnd);
+                    return 0;
             }
             return 0;
         }

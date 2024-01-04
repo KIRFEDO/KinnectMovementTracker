@@ -29,37 +29,10 @@ HRESULT App::run()
 
 	while (WM_QUIT != msg.message)
 	{
-		HRESULT hr_depthMode = E_FAIL;
-		HRESULT hr_skeletonMode = E_FAIL;
-
-		DepthModeData* depthModeData = new DepthModeData();
-		hr_depthMode = m_depthMode.getCurrentFrame(depthModeData);
-		SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
-		hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
-		
-		/*{
-			//Snippet for opening one frame from the file below
-			//In case of using this snippet additional delition of pBuffer is needed
-			WCHAR test[19] = L"C:/BuffEnv/res.txt";
-			hr = m_readerDepthMode.Reset();
-			hr = m_readerDepthMode.Initiate(test, 19);
-			m_readerDepthMode.ReadFrame(&res->pBuffer);
-			res->nWidth = 512;
-			res->nHeight = 424;
-			res->nDepthMinReliableDistance = 0;
-			res->nDepthMaxDistance = INT16_MAX;
-			hr = S_OK;
-		}*/
-
-		
-		m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
-		HandleDataRecording(RECORD_DATA_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
-
-		m_depthMode.ReleaseSpecificResources();
-		m_skeletonMode.ReleaseSpecificResources();
-
-		delete depthModeData;
-		delete skeletonModeData;
+		if (APP_MODE_FLAG == APP_MODE::LIVE)
+			LiveModeIteration();
+		else
+			ReadingModeIteration();
 
 		while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -124,13 +97,16 @@ HRESULT App::InitGUI()
 HRESULT App::InitStatic()
 {
 	m_hWndStaticPatientName = CreateWindowW(L"static", L"Patient name:", WS_CHILD | WS_VISIBLE | SS_LEFT,
-		staticXOffset, 25, staticXWidth, 25, m_hWndMain, (HMENU)STATIC_PATIENT_NAME, m_hInstCurr, nullptr);
+		xOffset1stCol, 25, xWidth1stCol, 25, m_hWndMain, (HMENU)STATIC_PATIENT_NAME, m_hInstCurr, nullptr);
 	
 	m_hWndStaticAdditonalInfo = CreateWindowW(L"static", L"Additional info:", WS_CHILD | WS_VISIBLE | SS_LEFT,
-		staticXOffset, 75, staticXWidth, 250, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+		xOffset1stCol, 75, xWidth1stCol, 250, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
 	
 	m_hWndStaticFilePath = CreateWindowW(L"static", L"File path:", WS_CHILD | WS_VISIBLE | SS_LEFT,
-		staticXOffset, 350, staticXWidth, 25, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+		xOffset1stCol, 350, xWidth1stCol, 25, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+	
+	m_hWndStaticCurrentMode = CreateWindowW(L"static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		xOffset3rdCol, 25, xWidth3rdCol, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
 
 	if (!(m_hWndStaticPatientName &&
 		m_hWndStaticAdditonalInfo &&
@@ -143,13 +119,13 @@ HRESULT App::InitStatic()
 HRESULT App::InitEdit()
 {
 	m_hWndEditPatientName = CreateWindowW(L"edit", L"Patient name", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-		editXOffset, 25, editXWidth, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
+		xOffset2ndCol, 25, xWidth2ndCol, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
 
 	m_hWndEditAdditionalInfo = CreateWindowW(L"edit", L"Additional info", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOVSCROLL | ES_MULTILINE | ES_LEFT | WS_VSCROLL,
-		editXOffset, 75, editXWidth, 250, m_hWndMain, (HMENU)EDIT_ADDITIONAL_INFO, m_hInstCurr, nullptr);
+		xOffset2ndCol, 75, xWidth2ndCol, 250, m_hWndMain, (HMENU)EDIT_ADDITIONAL_INFO, m_hInstCurr, nullptr);
 
 	m_hWndEditOutputFilePath = CreateWindowW(L"edit", L"File path", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-		editXOffset, 350, editXWidth, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
+		xOffset2ndCol, 350, xWidth2ndCol, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
 
 	if (!(m_hWndEditPatientName &&
 		m_hWndEditAdditionalInfo))
@@ -161,11 +137,14 @@ HRESULT App::InitEdit()
 HRESULT App::InitButtons()
 {
 	m_hWndBtnChoseOutputFile = CreateWindowW(L"button", L"Chose output file", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		editXOffset, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
+		xOffset2ndCol, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
 
 	m_hWndBtnStartStopRecording = CreateWindowW(L"button", L"Start/Stop recording", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		editXOffset+140+25, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
+		xOffset2ndCol+140+25, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
 
+	m_hWndBtnSwitchAppMode = CreateWindowW(L"button", L"Switch app mode", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		xOffset3rdCol, 75, xWidth3rdCol, 50, m_hWndMain, (HMENU)BUTTON_SWITCH_APP_MODE, m_hInstCurr, nullptr);
+	
 	m_hWndBtnSwitchViewMode = CreateWindowW(L"button", L"Switch view mode", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
 		25, 550, 150, 50, m_hWndMain, (HMENU)BUTTON_SWITCH_VIEW_MODE, m_hInstCurr, nullptr);
 
@@ -241,7 +220,49 @@ HRESULT App::InitFileWriters()
 	return hr;
 }
 
-HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode, 
+HRESULT App::LiveModeIteration()
+{
+	HRESULT hr_depthMode = E_FAIL;
+	HRESULT hr_skeletonMode = E_FAIL;
+
+	DepthModeData* depthModeData = new DepthModeData();
+	hr_depthMode = m_depthMode.getCurrentFrame(depthModeData);
+	SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
+	hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
+
+	/*{
+		//Snippet for opening one frame from the file below
+		//In case of using this snippet additional delition of pBuffer is needed
+		WCHAR test[19] = L"C:/BuffEnv/res.txt";
+		hr = m_readerDepthMode.Reset();
+		hr = m_readerDepthMode.Initiate(test, 19);
+		m_readerDepthMode.ReadFrame(&res->pBuffer);
+		res->nWidth = 512;
+		res->nHeight = 424;
+		res->nDepthMinReliableDistance = 0;
+		res->nDepthMaxDistance = INT16_MAX;
+		hr = S_OK;
+	}*/
+
+
+	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+	HandleDataRecording(RECORD_DATA_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+
+	m_depthMode.ReleaseSpecificResources();
+	m_skeletonMode.ReleaseSpecificResources();
+
+	delete depthModeData;
+	delete skeletonModeData;
+
+	return S_OK;
+}
+
+HRESULT App::ReadingModeIteration()
+{
+	return E_NOTIMPL;
+}
+
+HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
 								DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData)
 {
 	switch (recordingState)

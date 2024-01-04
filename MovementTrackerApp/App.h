@@ -34,6 +34,8 @@ class App
 		HRESULT InitApp();
 
 		//Cyclic app functions
+		HRESULT LiveModeIteration();
+		HRESULT ReadingModeIteration();
 		HRESULT HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
 									DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData);
 
@@ -57,19 +59,23 @@ class App
 
 		HWND m_hWndBtnChoseOutputFile;						// chosing the output file
 		HWND m_hWndBtnStartStopRecording;					// starting/stopping recording
+		HWND m_hWndBtnSwitchAppMode;						// switching app mode
 		HWND m_hWndBtnSwitchViewMode;						// switching view mode
 
 		HWND m_hWndStaticPatientName;						// patient name
 		HWND m_hWndStaticAdditonalInfo;						// additional info
 		HWND m_hWndStaticFilePath;							// file path
+		HWND m_hWndStaticCurrentMode;						// current app mode info
 
 		//App offsets
-		// //Static
-		const UINT16 staticXOffset = 550;
-		const UINT16 staticXWidth = 150;
-		// //Edit
-		const UINT16 editXOffset = staticXOffset + staticXWidth;
-		const UINT16 editXWidth = 300;
+		const UINT16 xOffset1stCol = 550;
+		const UINT16 xWidth1stCol = 150;
+		
+		const UINT16 xOffset2ndCol = xOffset1stCol + xWidth1stCol;
+		const UINT16 xWidth2ndCol = 300;
+
+		const UINT16 xOffset3rdCol = xOffset2ndCol + xWidth2ndCol+25;
+		const UINT16 xWidth3rdCol = 200;
 
 		HINSTANCE m_hInstCurr;								// current instance
 		int m_nCmdShow;										// main window show mode
@@ -98,6 +104,6 @@ class App
 		//Recording data
 		size_t m_counterDepthModeFrames;
 		size_t m_counterSkeletonModeFrames;
-		std::chrono::time_point<std::chrono::system_clock> m_recordingStartTime;
+		std::chrono::time_point<std::chrono::system_clock> m_recordingStartTime;		
 };
 
