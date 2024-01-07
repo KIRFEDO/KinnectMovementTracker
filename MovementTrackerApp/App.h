@@ -40,6 +40,7 @@ class App
 									DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData);
 
 		//Recording functions
+		HRESULT InitRecordingFolder();
 		HRESULT InitFileWriters();
 		HRESULT InitRecordingCounters();
 		HRESULT CreateHeaderFile();
@@ -102,6 +103,7 @@ class App
 		FileReaderDepthMode m_readerDepthMode;
 
 		//Recording data
+		std::wstring m_recordingDirectoryPath;
 		size_t m_counterDepthModeFrames;
 		size_t m_counterSkeletonModeFrames;
 		std::chrono::time_point<std::chrono::system_clock> m_recordingStartTime;		

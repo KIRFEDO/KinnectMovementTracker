@@ -14,7 +14,7 @@ namespace FileWriters {
             os.close();
     }
 
-    HRESULT KinectWriter::Init(WCHAR* targetDir)
+    HRESULT KinectWriter::Init(const WCHAR* targetDir)
     {
         HRESULT hr = S_OK;
 
@@ -70,7 +70,7 @@ namespace FileWriters {
             os.close();
     }
 
-    HRESULT MetadataWriter::Init(WCHAR* targetDir)
+    HRESULT MetadataWriter::Init(const WCHAR* targetDir)
     {
         HRESULT hr = S_OK;
 

@@ -10,8 +10,9 @@ using namespace KinectAdapters;
 
 App::App(HINSTANCE hInstCurr, int nCmdShow)
 {
-	this->m_hInstCurr = hInstCurr;
-	this->m_nCmdShow = nCmdShow;
+	m_hInstCurr = hInstCurr;
+	m_nCmdShow = nCmdShow;
+	m_recordingDirectoryPath = L"C:/BuffEnv/Live/";
 }
 
 App::~App()
@@ -201,18 +202,23 @@ HRESULT App::InitRecordingCounters()
 	return S_OK;
 }
 
+HRESULT App::InitRecordingFolder()
+{
+	return CreateDirectoryW(m_recordingDirectoryPath.c_str(), NULL) ? S_OK : E_FAIL;
+}
+
 HRESULT App::InitFileWriters()
 {
 	HRESULT hr = E_FAIL;
 	
-	WCHAR mdPath[24] = L"C:/BuffEnv/metadata.txt";
-	WCHAR dmPath[21] = L"C:/BuffEnv/depth.txt";
-	WCHAR smPath[20] = L"C:/BuffEnv/skel.txt";
-	hr = m_writerMetadata.Init(mdPath);
+	std::wstring mdPath = m_recordingDirectoryPath + L"metadata.txt";
+	std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
+	std::wstring smPath = m_recordingDirectoryPath + L"skel.txt";
+	hr = m_writerMetadata.Init(mdPath.c_str());
 	if(SUCCEEDED(hr))
-		hr = m_writerDepthMode.Init(dmPath);
+		hr = m_writerDepthMode.Init(dmPath.c_str());
 	if(SUCCEEDED(hr))
-		hr = m_writerSkeletonMode.Init(smPath);
+		hr = m_writerSkeletonMode.Init(smPath.c_str());
 	
 	if (FAILED(hr))
 		ResetFileWriters();
@@ -268,6 +274,7 @@ HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_de
 	switch (recordingState)
 	{
 		case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
+			InitRecordingFolder();
 			InitRecordingCounters();
 			InitFileWriters();
 			CreateHeaderFile();

@@ -39,7 +39,7 @@ namespace FileWriters {
 			KinectWriter();
 			~KinectWriter();
 
-			HRESULT Init(WCHAR* targetDir);
+			HRESULT Init(const WCHAR* targetDir);
 			HRESULT Reset();
 			HRESULT WriteFrame(FrameData* pData);
 			BOOL IsInit() const;
@@ -53,7 +53,7 @@ namespace FileWriters {
 			MetadataWriter();
 			~MetadataWriter();
 
-			HRESULT Init(WCHAR* targetDir);
+			HRESULT Init(const WCHAR* targetDir);
 			HRESULT Reset();
 			// TODO write metadata
 			// HRESULT WriteNameAndAdditionalInfo();
