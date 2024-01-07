@@ -12,9 +12,10 @@
 #include "stdafx.h"
 
 //#define READING
-#define DIRECTION
+//#define DIRECTION
+#define CHANGE_OF_DIRECTION
 
-const int tabSize = 5;
+const int tabSize = 10;
 CameraSpacePoint spacePoints[tabSize];
 float firstPos = -1;
 void printSpacePoints(int startIndex)
@@ -52,7 +53,7 @@ int getNext(int startIndex) {
 bool isMovingForward(int startIndex)
 {
     float res = spacePoints[startIndex].Z - spacePoints[getNext(startIndex)].Z;
-    
+    printf_s("Delta: %f\n", res);
     return !(res >= 0.05);
 }
 
@@ -166,6 +167,43 @@ int main()
     }
 
 #endif // DIRECION
+
+#ifdef CHANGE_OF_DIRECTION
+
+    using namespace KinectAdapters;
+    SkeletonMode m_skeletonMode;
+    HRESULT hr = m_skeletonMode.Init();
+    if (FAILED(hr))
+        throw std::runtime_error("Failed to init");
+
+    int counter = 0;
+    int spacePointIndex = 0;
+
+    while (1)
+    {
+        SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
+        HRESULT hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
+
+        if (SUCCEEDED(hr_skeletonMode))
+        {
+            counter++;
+            auto pJoints = skeletonModeData->joints;
+            spacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase].Position;
+
+            system("cls");
+            std::string res = isMovingForward(spacePointIndex) ? "Moving forward" : "Moving backwards";
+            std::cout << res << std::endl;
+
+            spacePointIndex++;
+            if (spacePointIndex == tabSize)
+                spacePointIndex = 0;
+        }
+
+        m_skeletonMode.ReleaseSpecificResources();
+        delete skeletonModeData;
+    }
+
+#endif // C
 
 }
 

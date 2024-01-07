@@ -6,6 +6,9 @@
 #include <memory>
 #include "d2d1.h"
 
+//TODO remove includes
+#include <windows.h>
+
 using namespace KinectAdapters;
 
 App::App(HINSTANCE hInstCurr, int nCmdShow)
@@ -27,6 +30,9 @@ HRESULT App::run()
 		return hr;
 
 	MSG msg = { 0 };
+
+	std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
+	hr = m_readerDepthMode.Init(dmPath.c_str());
 
 	while (WM_QUIT != msg.message)
 	{
@@ -106,7 +112,7 @@ HRESULT App::InitStatic()
 	m_hWndStaticFilePath = CreateWindowW(L"static", L"File path:", WS_CHILD | WS_VISIBLE | SS_LEFT,
 		xOffset1stCol, 350, xWidth1stCol, 25, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
 	
-	m_hWndStaticCurrentMode = CreateWindowW(L"static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+	m_hWndStaticCurrentMode = CreateWindowW(L"static", L"Current mode: LIVE", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
 		xOffset3rdCol, 25, xWidth3rdCol, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
 
 	if (!(m_hWndStaticPatientName &&
@@ -265,7 +271,30 @@ HRESULT App::LiveModeIteration()
 
 HRESULT App::ReadingModeIteration()
 {
-	return E_NOTIMPL;
+	//Snippet for opening one frame from the file below
+	//In case of using this snippet additional delition of pBuffer is needed
+	std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
+	HRESULT hr = m_readerDepthMode.Init(dmPath.c_str());
+	UINT16* temp = new UINT16[512 * 424];
+	DepthModeFrameData* frameData = new DepthModeFrameData(reinterpret_cast<char*>(temp));
+	m_readerDepthMode.ReadFrame(frameData);
+	Sleep((DWORD) 33);
+	
+	HRESULT hr_depthMode = S_OK;
+	HRESULT hr_skeletonMode = E_FAIL;
+	DepthModeData* depthModeData = new DepthModeData();
+	SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
+
+	depthModeData->pBuffer = reinterpret_cast<UINT16*>(frameData->pBuffer);
+	depthModeData->nDepthMinReliableDistance = 0;
+	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+	hr = S_OK;
+
+	delete[] temp;
+	delete depthModeData;
+	delete skeletonModeData;
+
+	return hr;
 }
 
 HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
@@ -307,7 +336,7 @@ HRESULT App::WriteDepthModeData(DepthModeData* depthModeData, HRESULT hr_depthMo
 	if (SUCCEEDED(hr))
 	{
 		m_counterDepthModeFrames += 1;
-		FrameData* data = new DepthModeFrameData(reinterpret_cast<const char*>(depthModeData->pBuffer), GetTimeFromRecordingStart());
+		FrameData* data = new DepthModeFrameData(reinterpret_cast<char*>(depthModeData->pBuffer), GetTimeFromRecordingStart());
 		hr = m_writerDepthMode.WriteFrame(data);
 		delete data;
 	}
@@ -321,7 +350,7 @@ HRESULT App::WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT h
 	if (SUCCEEDED(hr))
 	{
 		m_counterSkeletonModeFrames += 1;
-		FrameData* data = new SkeletonModeFrameData(reinterpret_cast<const char*>(skeletonModeData->joints), GetTimeFromRecordingStart());
+		FrameData* data = new SkeletonModeFrameData(reinterpret_cast<char*>(skeletonModeData->joints), GetTimeFromRecordingStart());
 		hr = m_writerSkeletonMode.WriteFrame(data);
 		delete data;
 	}

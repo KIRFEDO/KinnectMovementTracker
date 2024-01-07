@@ -148,11 +148,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FileReader.cpp" />
-    <ClCompile Include="FileReaderDepthMode.cpp" />
-    <ClCompile Include="FileReaderDepthMode.h" />
+    <ClCompile Include="FileReaders.cpp" />
+    <ClCompile Include="FileReaders.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\MovementTracker_inc\FrameData.h" />
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

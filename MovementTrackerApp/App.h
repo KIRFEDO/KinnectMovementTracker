@@ -5,12 +5,13 @@
 #include "SkeletonMode.h"
 #include "KinectRenderer.h"
 #include "FileWriters.h"
-#include "FileReaderDepthMode.h"
+#include "FileReaders.h"
 #include "KinectRenderer.h"
 #include <d2d1.h>
 #include <chrono>
 
 using namespace FileWriters;
+using namespace FileReaders;
 using namespace KinectAdapters;
 using namespace Renderers;
 
@@ -100,7 +101,7 @@ class App
 		KinectWriter m_writerSkeletonMode;
 
 		//Readers
-		FileReaderDepthMode m_readerDepthMode;
+		KinectReader m_readerDepthMode;
 
 		//Recording data
 		std::wstring m_recordingDirectoryPath;

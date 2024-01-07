@@ -158,6 +158,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\MovementTracker_inc\FrameData.h" />
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
     <ClInclude Include="FileWriters.h" />
   </ItemGroup>

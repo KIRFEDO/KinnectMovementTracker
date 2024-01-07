@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FileReader.cpp">
+    <ClCompile Include="FileReaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileReaderDepthMode.h">
+    <ClCompile Include="FileReaders.h">
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileReaderDepthMode.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\MovementTracker_inc\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MovementTracker_inc\FrameData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
