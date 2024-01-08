@@ -9,13 +9,14 @@
 #include <unordered_map>
 #include <map>
 #include "SkeletonMode.h"
+#include "KinectDataProcessors.h"
 #include "stdafx.h"
 
 //#define READING
 //#define DIRECTION
-#define CHANGE_OF_DIRECTION
+#define FILE_ANALYSIS
 
-const int tabSize = 10;
+const int tabSize = 15;
 CameraSpacePoint spacePoints[tabSize];
 float firstPos = -1;
 void printSpacePoints(int startIndex)
@@ -168,40 +169,15 @@ int main()
 
 #endif // DIRECION
 
-#ifdef CHANGE_OF_DIRECTION
+#ifdef FILE_ANALYSIS
 
-    using namespace KinectAdapters;
-    SkeletonMode m_skeletonMode;
-    HRESULT hr = m_skeletonMode.Init();
-    if (FAILED(hr))
-        throw std::runtime_error("Failed to init");
+    using namespace KinectDataProcessors;
+    SinglePassExtractor passExtractor;
 
-    int counter = 0;
-    int spacePointIndex = 0;
+    std::wstring dmPath = L"C:/BuffEnv/Live/skel.txt";;
+    passExtractor.Init(dmPath.c_str());
 
-    while (1)
-    {
-        SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
-        HRESULT hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
-
-        if (SUCCEEDED(hr_skeletonMode))
-        {
-            counter++;
-            auto pJoints = skeletonModeData->joints;
-            spacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase].Position;
-
-            system("cls");
-            std::string res = isMovingForward(spacePointIndex) ? "Moving forward" : "Moving backwards";
-            std::cout << res << std::endl;
-
-            spacePointIndex++;
-            if (spacePointIndex == tabSize)
-                spacePointIndex = 0;
-        }
-
-        m_skeletonMode.ReleaseSpecificResources();
-        delete skeletonModeData;
-    }
+    passExtractor.ProcessFile();
 
 #endif // C
 

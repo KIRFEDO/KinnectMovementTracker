@@ -18,5 +18,8 @@
     <ClCompile Include="KinectDataProcessors.h">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="KinectDataProcessors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

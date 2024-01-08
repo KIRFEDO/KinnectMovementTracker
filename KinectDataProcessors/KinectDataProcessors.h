@@ -10,13 +10,53 @@
 using namespace FileWriters;
 
 namespace KinectDataProcessors
-{	
-	std::vector<std::pair<time_t, time_t>> GetUsefullTimeSegments(const wchar_t* filePath) {
-		std::ifstream is;
-		is.open(filePath, std::ios::binary | std::ios::in);
-		if (!is.is_open())
-			throw std::runtime_error("Can`t open file");
+{
+	enum class __declspec(dllexport) Direction {
+		BACKWARDS,
+		STANDING_STILL,
+		FORWARD
+	};
 
+	template <class T>
+	class __declspec(dllexport) DynamicBuffer {
+		public:
+			DynamicBuffer(const size_t& size);
+			~DynamicBuffer();
 
-	}
+			size_t GetBufferSize() const;
+			void WriteNextValue(const T& val);
+
+			T& First();
+			T& Last();
+
+			T& operator[](size_t index);
+		private:
+
+			size_t GetNextIndex(size_t index);
+			size_t GetPrevIndex(size_t index);
+
+			T* m_buffer;
+			size_t m_bufferSize;
+			size_t m_currentIndex;
+	};
+
+	class __declspec(dllexport) SinglePassExtractor
+	{
+	public:
+		SinglePassExtractor();
+		~SinglePassExtractor();
+
+		HRESULT Init(const wchar_t* targetDir);
+		HRESULT GetPassSegments();
+		HRESULT ProcessFile();
+		BOOL IsInit() const;
+
+	private:
+		Direction GetWalkingDirection();
+
+		std::ifstream m_is;
+		BOOL m_isInitiated;
+		BOOL m_isFileProcessed;
+		DynamicBuffer<Joint>* m_dynamicBuffer;
+	};
 }

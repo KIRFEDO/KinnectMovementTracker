@@ -29,3 +29,18 @@ inline const wchar_t* ToWString(const APP_MODE& appState)
 		return L"READING";
 	}
 }
+
+inline const wchar_t* ToWString(const RECORD_DATA_STATE& recordState)
+{
+	switch (recordState)
+	{
+		case RECORD_DATA_STATE::DO_NOT_RECORD:
+			return L"RECORDING STOPPED";
+		case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
+			return L"RECORDING IS INITIATING";
+		case RECORD_DATA_STATE::RECORDING:
+			return L"RECORDING";
+		case RECORD_DATA_STATE::FINISH_RECORDING:
+			return L"RECORDING IS FINISHING";
+	}
+}
