@@ -31,7 +31,8 @@ HRESULT App::run()
 
 	MSG msg = { 0 };
 
-	std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
+	std::wstring dmPath = L"C:/BuffEnv/depthProcessed.txt";
+	//std::wstring dmPath = L"C:/BuffEnv/Live/depth.txt";
 	hr = m_readerDepthMode.Init(dmPath.c_str());
 
 	while (WM_QUIT != msg.message)
@@ -273,12 +274,13 @@ HRESULT App::ReadingModeIteration()
 {
 	//Snippet for opening one frame from the file below
 	//In case of using this snippet additional delition of pBuffer is needed
-	std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
-	HRESULT hr = m_readerDepthMode.Init(dmPath.c_str());
+	//std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
+	/*std::wstring dmPath = L"C:/BuffEnv/depthPrsdocessed.txt";
+	HRESULT hr = m_readerDepthMode.Init(dmPath.c_str());*/
 	UINT16* temp = new UINT16[512 * 424];
 	DepthModeFrameData* frameData = new DepthModeFrameData(reinterpret_cast<char*>(temp));
 	m_readerDepthMode.ReadFrame(frameData);
-	Sleep((DWORD) 33);
+	Sleep((DWORD) 30);
 	
 	HRESULT hr_depthMode = S_OK;
 	HRESULT hr_skeletonMode = E_FAIL;
@@ -288,7 +290,7 @@ HRESULT App::ReadingModeIteration()
 	depthModeData->pBuffer = reinterpret_cast<UINT16*>(frameData->pBuffer);
 	depthModeData->nDepthMinReliableDistance = 0;
 	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
-	hr = S_OK;
+	HRESULT hr = S_OK;
 
 	delete[] temp;
 	delete depthModeData;

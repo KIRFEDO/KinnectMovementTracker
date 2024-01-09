@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 
+#include "DynamicBuffer.h"
 #include "FrameData.h"
 #include "FileWriters.h"
 #include "stdafx.h"
@@ -17,29 +18,6 @@ namespace KinectDataProcessors
 		FORWARD
 	};
 
-	template <class T>
-	class __declspec(dllexport) DynamicBuffer {
-		public:
-			DynamicBuffer(const size_t& size);
-			~DynamicBuffer();
-
-			size_t GetBufferSize() const;
-			void WriteNextValue(const T& val);
-
-			T& First();
-			T& Last();
-
-			T& operator[](size_t index);
-		private:
-
-			size_t GetNextIndex(size_t index);
-			size_t GetPrevIndex(size_t index);
-
-			T* m_buffer;
-			size_t m_bufferSize;
-			size_t m_currentIndex;
-	};
-
 	class __declspec(dllexport) SinglePassExtractor
 	{
 	public:
@@ -48,7 +26,7 @@ namespace KinectDataProcessors
 
 		HRESULT Init(const wchar_t* targetDir);
 		HRESULT GetPassSegments();
-		HRESULT ProcessFile();
+		HRESULT ProcessFile(std::vector<std::pair<time_t, time_t>>& segments);
 		BOOL IsInit() const;
 
 	private:

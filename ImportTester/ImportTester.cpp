@@ -9,12 +9,15 @@
 #include <unordered_map>
 #include <map>
 #include "SkeletonMode.h"
+#include "FileReaders.h"
+#include "FileWriters.h"
 #include "KinectDataProcessors.h"
 #include "stdafx.h"
 
 //#define READING
 //#define DIRECTION
 #define FILE_ANALYSIS
+//#define CIRCULAR_BUFFER
 
 const int tabSize = 15;
 CameraSpacePoint spacePoints[tabSize];
@@ -172,15 +175,66 @@ int main()
 #ifdef FILE_ANALYSIS
 
     using namespace KinectDataProcessors;
+    using namespace FileWriters;
+    using namespace FileReaders;
     SinglePassExtractor passExtractor;
 
-    std::wstring dmPath = L"C:/BuffEnv/Live/skel.txt";;
-    passExtractor.Init(dmPath.c_str());
+    std::wstring smPath = L"C:/BuffEnv/Live/skel.txt";;
+    passExtractor.Init(smPath.c_str());
 
-    passExtractor.ProcessFile();
+    std::vector<std::pair<time_t, time_t>> segments;
+    passExtractor.ProcessFile(segments);
 
-#endif // C
+    std::wstring dmPath = L"C:/BuffEnv/Live/depth.txt";
+    std::wstring dmPath_proc = L"C:/BuffEnv/depthProcessed.txt";
 
+    KinectReader depthReader;
+    KinectWriter depthWriter;
+    
+    depthReader.Init(dmPath.c_str());
+    depthWriter.Init(dmPath_proc.c_str());
+
+    UINT16* data = new UINT16[512 * 424];
+    for (const auto& segment : segments)
+    {
+        auto startTime = segment.first;
+        auto endTime = segment.second;
+
+        while (!depthReader.IsEOF())
+        {
+            DepthModeFrameData depthMode(reinterpret_cast<char*>(data));
+            HRESULT hr = depthReader.ReadFrame(&depthMode);
+            if (SUCCEEDED(hr))
+            {
+                if (depthMode.timestamp > segment.second)
+                    break;
+                if (depthMode.timestamp > segment.first)
+                    depthWriter.WriteFrame(&depthMode);
+            }
+            else
+            {
+                throw std::runtime_error("");
+            }
+
+        }
+    }
+
+    delete[] data;
+
+#endif // FILE_ANALYSIS
+
+#ifdef CIRCULAR_BUFFER
+
+    using namespace KinectDataProcessors;
+    DynamicBuffer<int> buffer(5);
+    for (int i = 0; i < 10; i++)
+    {
+        buffer.WriteNextValue(i);
+    }
+    std::cout << buffer.First() << std::endl;
+    std::cout << buffer.Last() << std::endl;
+
+#endif // CIRCULAR_BUFFER
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

@@ -154,6 +154,9 @@
     <ClCompile Include="KinectDataProcessors.cpp" />
     <ClCompile Include="KinectDataProcessors.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DynamicBuffer.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -11,7 +11,7 @@ namespace KinectDataProcessors {
 
 	SinglePassExtractor::~SinglePassExtractor()
 	{
-		delete[] m_dynamicBuffer;
+		delete m_dynamicBuffer;
 	}
 
 	HRESULT SinglePassExtractor::Init(const wchar_t* targetDir)
@@ -41,12 +41,10 @@ namespace KinectDataProcessors {
 		return S_OK;
 	}
 
-	HRESULT SinglePassExtractor::ProcessFile()
+	HRESULT SinglePassExtractor::ProcessFile(std::vector<std::pair<time_t, time_t>>& segments)
 	{
 		if (!IsInit())
 			return HCS_E_INVALID_STATE;
-
-		std::vector<std::pair<time_t, time_t>> segments;
 
 		//Allocate temporary storage
 		Joint joints[JointType_Count];
@@ -67,7 +65,6 @@ namespace KinectDataProcessors {
 				return E_ABORT;
 			}
 		}
-		segments.push_back(tempSegment);
 
 		// Sometimes due to the speed of the walking 
 		// distance between points can cause single "direction switch"
@@ -76,11 +73,15 @@ namespace KinectDataProcessors {
 		Direction prevDirection = currenDirection;
 		Direction direction = currenDirection;
 
+		if(currenDirection != Direction::FORWARD)
+			tempSegment = { 0, 0 };
+
+
 		int directionChangeCounter = 0;
 		bool isSegmentStart = false;
 		bool isSegmentEnd = true;
 
-		tempSegment = { 0, 0 };
+		int counter = 0;
 
 		while (!m_is.eof())
 		{
@@ -100,10 +101,31 @@ namespace KinectDataProcessors {
 			if (directionChangeCounter == 5)
 			{
 				currenDirection = direction;
-				directionChangeCounter = 0
+				directionChangeCounter = 0;
+				switch (currenDirection)
+				{
+					case Direction::BACKWARDS:
+					case Direction::STANDING_STILL:
+						tempSegment.second = frameTime;
+						segments.push_back(tempSegment);
+						tempSegment = { 0, 0 };
+						break;
+					case Direction::FORWARD:
+						tempSegment.first = frameTime;
+						break;
+				}
 			}
 
 			prevDirection = direction;
+
+			counter += 1;
+			printf_s("Iteration #%d Delta:%f\n", counter, m_dynamicBuffer->Last().Position.Z - m_dynamicBuffer->First().Position.Z);
+		}
+
+		if (currenDirection == Direction::FORWARD)
+		{
+			tempSegment.second = frameTime;
+			segments.push_back(tempSegment);
 		}
 
 		return S_OK;
@@ -117,7 +139,8 @@ namespace KinectDataProcessors {
 	Direction SinglePassExtractor::GetWalkingDirection()
 	{
 		float delta = m_dynamicBuffer->Last().Position.Z - m_dynamicBuffer->First().Position.Z;
-		if (delta <= -0.1) {
+		return delta >= 0 ? Direction::FORWARD : Direction::BACKWARDS;
+		/*if (delta <= -0.1) {
 			return Direction::FORWARD;
 		}
 		else if (-0.1 < delta && delta < 0.1)
@@ -127,88 +150,6 @@ namespace KinectDataProcessors {
 		else
 		{
 			return Direction::BACKWARDS;
-		}
-	}
-
-	template<class T>
-	DynamicBuffer<T>::DynamicBuffer(const size_t& size)
-	{
-		m_bufferSize = size;
-		m_buffer = new T[m_bufferSize];
-		m_currentIndex = 0;
-	}
-
-	template<class T>
-	DynamicBuffer<T>::~DynamicBuffer()
-	{
-		delete[] m_buffer;
-	}
-
-	template<class T>
-	size_t DynamicBuffer<T>::GetBufferSize() const
-	{
-		return m_bufferSize;
-	}
-
-	template<class T>
-	void DynamicBuffer<T>::WriteNextValue(const T& val)
-	{
-		m_buffer[m_currentIndex] = val;
-		m_currentIndex = GetNextIndex(m_currentIndex);
-	}
-
-	template<class T>
-	T& DynamicBuffer<T>::First()
-	{
-		return m_buffer[0];
-	}
-
-	template<class T>
-	T& DynamicBuffer<T>::Last()
-	{
-		return m_buffer[m_bufferSize - 1];
-	}
-
-	template<class T>
-	T& DynamicBuffer<T>::operator[](size_t index)
-	{
-		if (index >= m_bufferSize)
-			throw std::out_of_range("");
-
-		auto startIndex = GetNextIndex(m_currentIndex);
-		if (startIndex + index < m_bufferSize)
-		{
-			return m_buffer[index];
-		}
-		else
-		{
-			return m_buffer[index - startIndex];
-		}
-	}
-
-	template<class T>
-	size_t DynamicBuffer<T>::GetNextIndex(size_t index)
-	{
-		if (index + 1 != m_bufferSize)
-		{
-			return index + 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
-	template<class T>
-	size_t DynamicBuffer<T>::GetPrevIndex(size_t index)
-	{
-		if (index > 0)
-		{
-			return index - 1;
-		}
-		else
-		{
-			return m_bufferSize-1;
-		}
+		}*/
 	}
 }
