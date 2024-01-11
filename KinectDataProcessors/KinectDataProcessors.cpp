@@ -23,8 +23,8 @@ namespace KinectDataProcessors {
 
 		if (SUCCEEDED(hr))
 		{
-			m_is.open(targetDir, std::ios::in | std::ios::binary);
-			hr = m_is.is_open() ? S_OK : E_HANDLE;
+			hr = m_reader.Init(targetDir);
+			hr = m_reader.IsInit() ? S_OK : E_HANDLE;
 		}
 
 		if (SUCCEEDED(hr))
@@ -47,17 +47,19 @@ namespace KinectDataProcessors {
 			return HCS_E_INVALID_STATE;
 
 		//Allocate temporary storage
-		Joint joints[JointType_Count];
+		SkeletonModeFrameData skeletonData(nullptr);
+		skeletonData.ReserveBufferMemory();
 		time_t frameTime;
 		std::pair<time_t, time_t> tempSegment = { 0, 0 };
 
 		//fill the buffer
 		for (int i = 0; i < m_dynamicBuffer->GetBufferSize(); i++)
 		{
-			if (!m_is.eof()) {
-				m_is.read(reinterpret_cast<char*>(&joints), sizeof(Joint) * JointType_Count);
-				m_is.read(reinterpret_cast<char*>(&frameTime), sizeof(time_t));
-				m_dynamicBuffer->WriteNextValue(joints[JointType_SpineBase]);
+			if (!m_reader.IsEOF()) {
+				m_reader.ReadFrame(&skeletonData);
+				Joint* pJoints = reinterpret_cast<Joint*>(skeletonData.pBuffer);
+				m_dynamicBuffer->WriteNextValue((pJoints[JointType_SpineBase]));
+				frameTime = skeletonData.timestamp;
 				tempSegment.second = frameTime;
 			}
 			else
@@ -83,11 +85,12 @@ namespace KinectDataProcessors {
 
 		int counter = 0;
 
-		while (!m_is.eof())
+		while (!m_reader.IsEOF())
 		{
-			m_is.read(reinterpret_cast<char*>(&joints), sizeof(Joint) * JointType_Count);
-			m_is.read(reinterpret_cast<char*>(&frameTime), sizeof(time_t));
-			m_dynamicBuffer->WriteNextValue(joints[JointType_SpineBase]);
+			m_reader.ReadFrame(&skeletonData);
+			Joint* pJoints = reinterpret_cast<Joint*>(skeletonData.pBuffer);
+			m_dynamicBuffer->WriteNextValue(pJoints[JointType_SpineBase]);
+			frameTime = skeletonData.timestamp;
 
 			direction = GetWalkingDirection();
 			if (direction != currenDirection)
@@ -140,6 +143,8 @@ namespace KinectDataProcessors {
 	{
 		float delta = m_dynamicBuffer->Last().Position.Z - m_dynamicBuffer->First().Position.Z;
 		return delta >= 0 ? Direction::FORWARD : Direction::BACKWARDS;
+		
+		//TODO remove code if nothing gonna change
 		/*if (delta <= -0.1) {
 			return Direction::FORWARD;
 		}
@@ -151,5 +156,40 @@ namespace KinectDataProcessors {
 		{
 			return Direction::BACKWARDS;
 		}*/
+	}
+
+	AxisRotator::AxisRotator()
+	{
+		m_isInitiated = FALSE;
+	}
+
+	AxisRotator::~AxisRotator()
+	{
+		if (IsInit())
+			m_is.close();
+	}
+
+	HRESULT AxisRotator::Init(const wchar_t* targetDir, std::vector<std::pair<time_t, time_t>>* segments)
+	{
+		if (IsInit())
+			return E_NOT_VALID_STATE;
+
+		m_is.open(targetDir, std::ios::in | std::ios::binary);
+		if (!m_is.is_open())
+			return E_HANDLE;
+		
+		m_pSegments = segments;
+
+		return S_OK;
+	}
+
+	HRESULT AxisRotator::CreateFileWithRotatedAxis()
+	{
+		return S_OK;
+	}
+
+	BOOL AxisRotator::IsInit() const
+	{
+		return m_isInitiated;
 	}
 }
