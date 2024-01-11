@@ -7,20 +7,29 @@ namespace FileReaders
     HRESULT KinectReader::Reset()
     {
         HRESULT hr = S_OK;
-        if (!isInitiated)
+        if (!IsInit())
             hr = E_NOT_VALID_STATE;
         if (SUCCEEDED(hr))
         {
-            isInitiated = false;
-            is.close();
+            m_isInit = false;
+            m_is.close();
         }
         return hr;
+    }
+
+    HRESULT KinectReader::MoveCursorAtFileBeginning()
+    {
+        if (!IsInit())
+            return E_NOT_VALID_STATE;
+
+        Reset();
+        Init(m_filePath.c_str());
     }
 
     HRESULT KinectReader::ReadFrame(FrameData* pData)
     {
         //Memory MUST be allocated before frame reading
-        if (is.eof())
+        if (m_is.eof())
             return E_ABORT;
         if (pData->pBuffer == nullptr)
             return E_POINTER;
@@ -29,8 +38,8 @@ namespace FileReaders
 
 
         try {
-            is.read(reinterpret_cast<char*> (pData->pBuffer), pData->dataSize);
-            is.read(reinterpret_cast<char*> (&(pData->timestamp)), sizeof(time_t));
+            m_is.read(reinterpret_cast<char*> (pData->pBuffer), pData->dataSize);
+            m_is.read(reinterpret_cast<char*> (&(pData->timestamp)), sizeof(time_t));
         }
         catch (...) {
             return E_FAIL;
@@ -43,44 +52,47 @@ namespace FileReaders
 
     KinectReader::KinectReader()
     {
-        isInitiated = FALSE;
+        m_isInit = FALSE;
     }
 
     KinectReader::~KinectReader()
     {
         if (IsInit())
-            is.close();
+            m_is.close();
     }
 
     HRESULT KinectReader::Init(const WCHAR* filePath)
     {
         HRESULT hr = S_OK;
 
-        if (isInitiated)
+        if (IsInit())
             hr = E_NOT_VALID_STATE;
 
         if (SUCCEEDED(hr))
         {
-            is.open(filePath, std::ios::in | std::ios::binary);
-            hr = is.is_open() ? S_OK : E_HANDLE;
+            m_is.open(filePath, std::ios::in | std::ios::binary);
+            hr = m_is.is_open() ? S_OK : E_HANDLE;
         }
 
         if (SUCCEEDED(hr))
-            isInitiated = true;
+        {
+            m_isInit = true;
+            m_filePath = filePath;
+        }
 
         return hr;
     }
 
     BOOL KinectReader::IsInit() const
     {
-        return isInitiated;
+        return m_isInit;
     }
 
     BOOL KinectReader::IsEOF() const
     {
         if (!IsInit())
             return E_NOT_VALID_STATE;
-        return is.eof();
+        return m_is.eof();
     }
 
 }

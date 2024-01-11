@@ -13,12 +13,14 @@ namespace FileReaders {
 
 		HRESULT Init(const WCHAR* filePath);
 		HRESULT Reset();
+		HRESULT MoveCursorAtFileBeginning();
 		HRESULT ReadFrame(FrameData* pData);
 		BOOL IsInit() const;
 		BOOL IsEOF() const;
 	private:
-		std::ifstream is;
-		BOOL isInitiated;
+		std::ifstream m_is;
+		BOOL m_isInit;
+		std::wstring m_filePath;
 	};
 
 };
