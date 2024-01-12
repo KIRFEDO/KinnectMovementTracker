@@ -13,13 +13,14 @@
 #include "FileWriters.h"
 #include "KinectDataProcessors.h"
 #include "stdafx.h"
+#include <cmath>
 
 //#define READING
-//#define DIRECTION
-#define FILE_ANALYSIS
+#define DIRECTION
+//#define FILE_ANALYSIS
 //#define CIRCULAR_BUFFER
 
-const int tabSize = 15;
+const int tabSize = 30;
 CameraSpacePoint spacePoints[tabSize];
 float firstPos = -1;
 void printSpacePoints(int startIndex)
@@ -155,11 +156,17 @@ int main()
             spacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase].Position;
             
             system("cls");
-            printSpacePoints(spacePointIndex);
+            //printSpacePoints(spacePointIndex);
             if (firstPos == -1)
                 firstPos = spacePoints[spacePointIndex].Z;
-            std::string res = isMovingForward(spacePointIndex) ? "Moving forward" : "Moving backwards";
-            std::cout << res << std::endl;
+            //std::string res = isMovingForward(spacePointIndex) ? "Moving forward" : "Moving backwards";
+            auto start = spacePoints[getNext(spacePointIndex)];
+            auto end = spacePoints[spacePointIndex];
+            auto delta_z = end.Z - start.Z;
+            auto delta_x = end.X - start.X;
+
+            auto angle = std::atan2(delta_x, delta_z);
+            std::cout << angle * 180 / 3.1415926 << std::endl;
 
             spacePointIndex++;
             if (spacePointIndex == tabSize)
@@ -177,49 +184,64 @@ int main()
     using namespace KinectDataProcessors;
     using namespace FileWriters;
     using namespace FileReaders;
+
+    AxisRotator axisRotator;
+    KinectReader depthReader;
+    KinectWriter depthWriter;
     SinglePassExtractor passExtractor;
 
-    std::wstring smPath = L"C:/BuffEnv/Live/skel.txt";;
+    std::wstring smPath = L"C:/BuffEnv/Live/skel.txt";
+    axisRotator.Init(smPath.c_str());
     passExtractor.Init(smPath.c_str());
 
     std::vector<std::pair<time_t, time_t>> segments;
-    passExtractor.ProcessFile(segments);
+    HRESULT hr = passExtractor.ProcessFile(segments);
+    if (FAILED(hr))
+        throw std::runtime_error("");
+
+    //axisRotator.CalculateRotationAngles(segments);
 
     std::wstring dmPath = L"C:/BuffEnv/Live/depth.txt";
     std::wstring dmPath_proc = L"C:/BuffEnv/depthProcessed.txt";
 
-    KinectReader depthReader;
-    KinectWriter depthWriter;
-    
-    depthReader.Init(dmPath.c_str());
+
+
+    /*depthReader.Init(dmPath.c_str());
     depthWriter.Init(dmPath_proc.c_str());
+
 
     UINT16* data = new UINT16[512 * 424];
     for (const auto& segment : segments)
     {
         auto startTime = segment.first;
         auto endTime = segment.second;
+        
+        CameraSpacePoint start;
+        CameraSpacePoint end = {-1, -1, -1};
+        
+        bool isFirstRead = true;
 
         while (!depthReader.IsEOF())
         {
-            DepthModeFrameData depthMode(reinterpret_cast<char*>(data));
-            HRESULT hr = depthReader.ReadFrame(&depthMode);
+            DepthModeFrameData depthModeFrameData(reinterpret_cast<char*>(data));
+            HRESULT hr = depthReader.ReadFrame(&depthModeFrameData);
             if (SUCCEEDED(hr))
             {
-                if (depthMode.timestamp > segment.second)
+                if (depthModeFrameData.timestamp > segment.second)
                     break;
-                if (depthMode.timestamp > segment.first)
-                    depthWriter.WriteFrame(&depthMode);
+                if (depthModeFrameData.timestamp > segment.first)
+                    depthWriter.WriteFrame(&depthModeFrameData);
             }
             else
             {
                 throw std::runtime_error("");
             }
 
+            Joint* pJoints = reinterpret_cast<Joint*>(depthModeFrameData.pBuffer);
         }
     }
 
-    delete[] data;
+    delete[] data;*/
 
 #endif // FILE_ANALYSIS
 

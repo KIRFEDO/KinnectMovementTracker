@@ -1,4 +1,5 @@
 #include "KinectDataProcessors.h"
+#include <cmath>
 
 namespace KinectDataProcessors {
 
@@ -36,7 +37,7 @@ namespace KinectDataProcessors {
 	HRESULT SinglePassExtractor::GetPassSegments()
 	{
 		if (!IsInit())
-			return HCS_E_INVALID_STATE;
+			return E_NOT_VALID_STATE;
 
 		return S_OK;
 	}
@@ -44,7 +45,7 @@ namespace KinectDataProcessors {
 	HRESULT SinglePassExtractor::ProcessFile(std::vector<std::pair<time_t, time_t>>& segments)
 	{
 		if (!IsInit())
-			return HCS_E_INVALID_STATE;
+			return E_NOT_VALID_STATE;
 
 		//Allocate temporary storage
 		SkeletonModeFrameData skeletonData(nullptr);
@@ -160,27 +161,84 @@ namespace KinectDataProcessors {
 
 	AxisRotator::AxisRotator()
 	{
-		m_isInitiated = FALSE;
 	}
 
 	AxisRotator::~AxisRotator()
 	{
-		if (IsInit())
-			m_is.close();
 	}
 
-	HRESULT AxisRotator::Init(const wchar_t* targetDir, std::vector<std::pair<time_t, time_t>>* segments)
+	HRESULT AxisRotator::Init(const wchar_t* filePath)
 	{
 		if (IsInit())
 			return E_NOT_VALID_STATE;
 
-		m_is.open(targetDir, std::ios::in | std::ios::binary);
-		if (!m_is.is_open())
+		m_reader.Init(filePath);
+		if (!m_reader.IsInit())
 			return E_HANDLE;
-		
-		m_pSegments = segments;
 
+		m_isInit = TRUE;
 		return S_OK;
+	}
+
+	HRESULT AxisRotator::CalculateRotationAngles(std::vector<std::pair<time_t, time_t>>& segments)
+	{
+		if (m_wereAnglesCalculated)
+			return E_NOT_VALID_STATE;
+
+		SkeletonModeFrameData skeletonModeFrameData(nullptr);
+		skeletonModeFrameData.ReserveBufferMemory();
+
+		for (const auto& segment : segments)
+		{
+			auto startTime = segment.first;
+			auto endTime = segment.second;
+			bool isFirstRead = true;
+			CameraSpacePoint start = { -1, -1, -1 };
+			CameraSpacePoint end = { -1, -1, -1 };
+
+			while (!m_reader.IsEOF())
+			{
+				HRESULT hr = m_reader.ReadFrame(&skeletonModeFrameData);
+				if (FAILED(hr))
+					throw std::runtime_error("Unexpected error during rotation angles calculation");
+				
+				if (skeletonModeFrameData.timestamp > segment.second)
+					break;
+
+				Joint* pJoints = reinterpret_cast<Joint*>(skeletonModeFrameData.pBuffer);
+				if (isFirstRead)
+				{
+					start = pJoints[JointType_SpineBase].Position;
+					isFirstRead = false;
+				}
+				else
+				{
+					start = pJoints[JointType_SpineBase].Position;
+				}
+			}
+
+			if (IsValidSpacePoint(start))
+				return E_FAIL;
+			
+			if (IsValidSpacePoint(end))
+				return E_FAIL;
+
+			auto delta_z = end.Z - start.Z;
+			auto delta_x = end.X - start.X;
+
+			auto angle = std::atan2(delta_x, delta_z);
+			m_rotationAngles.push_back(angle);
+		}
+
+		m_wereAnglesCalculated = TRUE;
+		return S_OK;
+	}
+
+	HRESULT AxisRotator::GetRotationAngles(std::vector<float>& angles)
+	{
+		if (!m_wereAnglesCalculated)
+			return E_NOT_VALID_STATE;
+		angles = m_rotationAngles;
 	}
 
 	HRESULT AxisRotator::CreateFileWithRotatedAxis()
@@ -190,6 +248,11 @@ namespace KinectDataProcessors {
 
 	BOOL AxisRotator::IsInit() const
 	{
-		return m_isInitiated;
+		return m_isInit;
+	}
+
+	BOOL AxisRotator::IsValidSpacePoint(const CameraSpacePoint& spacePoint) const
+	{
+		return spacePoint.X == -1 && spacePoint.Y == -1 && spacePoint.Z == -1;
 	}
 }

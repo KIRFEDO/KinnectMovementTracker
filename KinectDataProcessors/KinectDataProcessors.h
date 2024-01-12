@@ -45,14 +45,17 @@ namespace KinectDataProcessors
 		AxisRotator();
 		~AxisRotator();
 
-		HRESULT Init(const wchar_t* targetDir, std::vector<std::pair<time_t, time_t>>* segments);
-		HRESULT CalculateRotationAngles();
-		HRESULT GetRotationAngles();
+		HRESULT Init(const wchar_t* filePath);
+		HRESULT CalculateRotationAngles(std::vector<std::pair<time_t, time_t>>& segments);
+		HRESULT GetRotationAngles(std::vector<float>& angles);
 		HRESULT CreateFileWithRotatedAxis();
 		BOOL IsInit() const;
 	private:
-		std::ifstream m_is;
-		std::vector<std::pair<time_t, time_t>>* m_pSegments;
-		BOOL m_isInitiated;
+		BOOL m_isInit;
+		BOOL m_wereAnglesCalculated;
+		KinectReader m_reader;
+		std::vector<float> m_rotationAngles;
+
+		BOOL IsValidSpacePoint(const CameraSpacePoint& spacePoint) const;
 	};
 }
