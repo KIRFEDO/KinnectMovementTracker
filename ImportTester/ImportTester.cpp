@@ -14,20 +14,26 @@
 #include "KinectDataProcessors.h"
 #include "stdafx.h"
 #include <cmath>
+#include <chrono>
+#include "engine.h"
+#include "GetRotationAngle.h"
 
 //#define READING
-#define DIRECTION
+//#define DIRECTION
 //#define FILE_ANALYSIS
 //#define CIRCULAR_BUFFER
+#define MATLAB_TEST
 
 const int tabSize = 30;
-CameraSpacePoint spacePoints[tabSize];
+CameraSpacePoint cameraSpacePoints[tabSize];
+Joint spacePoints[tabSize];
+time_t times[tabSize];
 float firstPos = -1;
 void printSpacePoints(int startIndex)
 {
     for (int i = 0; i < tabSize; i++)
     {
-        auto point = spacePoints[i];
+        auto point = cameraSpacePoints[i];
         printf_s("Frame #%d\nx:%f\ny:%f\nz:%f\n", i, point.X, point.Y, point.Z);
         startIndex += 1;
         if (startIndex == tabSize)
@@ -57,9 +63,28 @@ int getNext(int startIndex) {
 
 bool isMovingForward(int startIndex)
 {
-    float res = spacePoints[startIndex].Z - spacePoints[getNext(startIndex)].Z;
+    float res = cameraSpacePoints[startIndex].Z - cameraSpacePoints[getNext(startIndex)].Z;
     printf_s("Delta: %f\n", res);
     return !(res >= 0.05);
+}
+
+void InitMatlab()
+{
+    const char* args[] = { "-nojvm" };
+    bool res = mclInitializeApplication(args, 1);
+    if (!res)
+    {
+        fprintf(stdout,
+            "An error occurred while initializing: \n %s ",
+            mclGetLastErrorMessage());
+    }
+    GetRotationAngleInitialize();
+}
+
+void DeInitMatlab()
+{
+    GetRotationAngleTerminate();
+    mclTerminateApplication();
 }
 
 int main()
@@ -257,6 +282,86 @@ int main()
     std::cout << buffer.Last() << std::endl;
 
 #endif // CIRCULAR_BUFFER
+
+#ifdef MATLAB_TEST
+
+    using namespace KinectAdapters;
+    SkeletonMode m_skeletonMode;
+    HRESULT hr = m_skeletonMode.Init();
+    if (FAILED(hr))
+        throw std::runtime_error("Failed to init");
+
+    int counter = 0;
+    int spacePointIndex = 0;
+
+    InitMatlab();
+
+    mwArray in_t(1, tabSize, mxClassID::mxDOUBLE_CLASS);
+    mwArray in_axisZ(1, tabSize, mxClassID::mxDOUBLE_CLASS);
+    mwArray in_axisX(1, tabSize, mxClassID::mxDOUBLE_CLASS);
+    double* dataT = new double[tabSize];
+    double* dataAxisZ = new double[tabSize];
+    double* dataAxisX = new double[tabSize];
+    mwArray out(1);
+    auto const startTime = std::chrono::system_clock::now();
+    //MatlabProcessors(1, out, in_1, in_2);
+
+    while (1)
+    {
+        SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
+        HRESULT hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
+
+        if (SUCCEEDED(hr_skeletonMode))
+        {
+            counter++;
+            auto pJoints = skeletonModeData->joints;
+            cameraSpacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase].Position;
+            spacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase];
+            auto const now = std::chrono::system_clock::now();
+            times[spacePointIndex] = (now - startTime).count();
+
+            system("cls");
+            //printSpacePoints(spacePointIndex);
+            if (firstPos == -1)
+                firstPos = cameraSpacePoints[spacePointIndex].Z;
+            //std::string res = isMovingForward(spacePointIndex) ? "Moving forward" : "Moving backwards";
+            auto start = cameraSpacePoints[getNext(spacePointIndex)];
+            auto end = cameraSpacePoints[spacePointIndex];
+            auto delta_z = end.Z - start.Z;
+            auto delta_x = end.X - start.X;
+
+            auto currIdx = getNext(spacePointIndex);
+            for (int i = 0; i < tabSize; i++)
+            {
+                auto point = spacePoints[currIdx];
+                dataT[i] = times[currIdx];
+                dataAxisZ[i] = point.Position.Z;
+                dataAxisX[i] = point.Position.X;
+                currIdx++;
+            }
+
+            in_t.SetData(dataT, tabSize);
+            in_axisZ.SetData(dataAxisZ, tabSize);
+            in_axisX.SetData(dataAxisX, tabSize);
+
+            GetRotationAngle(1, out, in_t, in_axisZ, in_axisX);
+            auto angle = std::atan2(delta_x, delta_z);
+            std::cout << "C++ angle:" << angle * 180 / 3.1415926 << std::endl;
+            std::cout << "Matlab angle:" << (double) out * 180 / 3.1415926 << std::endl;
+
+            spacePointIndex++;
+            if (spacePointIndex == tabSize)
+                spacePointIndex = 0;
+        }
+
+        m_skeletonMode.ReleaseSpecificResources();
+        delete skeletonModeData;
+    }
+
+    DeInitMatlab();    
+
+#endif // MATLAB_TEST
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
