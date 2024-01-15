@@ -24,7 +24,7 @@
     <ProjectGuid>{21a733b8-ecb3-4520-a902-e049c25ccc37}</ProjectGuid>
     <RootNamespace>MovementFileProcesser</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>MatlabFileProcesser</ProjectName>
+    <ProjectName>MatlabFileProcessor</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -71,6 +71,16 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\MovementTracker_main\$(Platform)\$(Configuration)\bin</OutDir>
+    <IncludePath>..\MatlabScripts;$(IncludePath);$(MATLAB_INC);..\FileReaders;..\FileWriters;..\MovementTracker_inc;$(KINECTSDK20_DIR)\inc;..\KinectDataProcessors</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(MATLAB_LIB);..\MovementTracker_main\$(Platform)\$(Configuration)\lib</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\MovementTracker_main\$(Platform)\$(Configuration)\bin</OutDir>
+    <IncludePath>..\MatlabScripts;$(IncludePath);$(MATLAB_INC);..\FileReaders;..\FileWriters;..\MovementTracker_inc;$(KINECTSDK20_DIR)\inc;..\KinectDataProcessors</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(MATLAB_LIB);..\MovementTracker_main\$(Platform)\$(Configuration)\lib</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -105,10 +115,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>GetRotationAngle.lib;KinectDataReaders.lib;KinectDataWriters.lib;KinectDataProcessors.lib;mclbase.lib;mclcommain.lib;mclmcr.lib;mclmcrrt.lib;mclxlmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -119,16 +131,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>GetRotationAngle.lib;KinectDataReaders.lib;KinectDataWriters.lib;KinectDataProcessors.lib;mclbase.lib;mclcommain.lib;mclmcr.lib;mclmcrrt.lib;mclxlmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MovementFileProcesser.cpp" />
+    <ClCompile Include="MovementFileProcessor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
