@@ -16,7 +16,7 @@
 #include <cmath>
 #include <chrono>
 #include "engine.h"
-#include "GetRotationAngle.h"
+#include "MatlabHelpers.h"
 
 //#define READING
 //#define DIRECTION
@@ -78,12 +78,12 @@ void InitMatlab()
             "An error occurred while initializing: \n %s ",
             mclGetLastErrorMessage());
     }
-    GetRotationAngleInitialize();
+    MatlabHelpersInitialize();
 }
 
 void DeInitMatlab()
 {
-    GetRotationAngleTerminate();
+    MatlabHelpersTerminate();
     mclTerminateApplication();
 }
 
