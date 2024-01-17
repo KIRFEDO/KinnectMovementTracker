@@ -31,9 +31,14 @@ HRESULT App::run()
 
 	MSG msg = { 0 };
 
-	std::wstring dmPath = L"C:/BuffEnv/depthProcessed.txt";
-	//std::wstring dmPath = L"C:/BuffEnv/Live/depth.txt";
-	hr = m_readerDepthMode.Init(dmPath.c_str());
+	//std::wstring path = L"C:/BuffEnv/Live/skel.txt";
+	//std::wstring path = L"C:/BuffEnv/Processed/skelRaw.txt";
+	std::wstring path = L"C:/BuffEnv/Processed/skelProc.txt";
+
+	//std::wstring path = L"C:/BuffEnv/Live/depth.txt";
+	//std::wstring path = L"C:/BuffEnv/Processed/skelRaw.txt";
+
+	hr = m_reader.Init(path.c_str());
 
 	while (WM_QUIT != msg.message)
 	{
@@ -274,25 +279,34 @@ HRESULT App::ReadingModeIteration()
 {
 	//Snippet for opening one frame from the file below
 	//In case of using this snippet additional delition of pBuffer is needed
-	//std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
-	/*std::wstring dmPath = L"C:/BuffEnv/depthPrsdocessed.txt";
-	HRESULT hr = m_readerDepthMode.Init(dmPath.c_str());*/
-	UINT16* temp = new UINT16[512 * 424];
-	DepthModeFrameData* frameData = new DepthModeFrameData(reinterpret_cast<char*>(temp));
-	m_readerDepthMode.ReadFrame(frameData);
+	
+	HRESULT hr_depthMode = E_FAIL;
+	HRESULT hr_skeletonMode = S_OK;
+
+	//Depth mode
+	//DepthModeFrameData* frameData = new DepthModeFrameData(nullptr);
+
+	//Skeleton mode
+	SkeletonModeFrameData* frameData = new SkeletonModeFrameData(nullptr);
+
+
+	frameData->ReserveBufferMemory();
+	m_reader.ReadFrame(frameData);
+
 	Sleep((DWORD) 30);
 	
-	HRESULT hr_depthMode = S_OK;
-	HRESULT hr_skeletonMode = E_FAIL;
 	DepthModeData* depthModeData = new DepthModeData();
 	SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
 
 	depthModeData->pBuffer = reinterpret_cast<UINT16*>(frameData->pBuffer);
 	depthModeData->nDepthMinReliableDistance = 0;
+
+	skeletonModeData->joints = reinterpret_cast<Joint*>(frameData->pBuffer);
+
+	VIEW_MODE_FLAG = VIEW_MODE::SKELETON;
 	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
 	HRESULT hr = S_OK;
 
-	delete[] temp;
 	delete depthModeData;
 	delete skeletonModeData;
 

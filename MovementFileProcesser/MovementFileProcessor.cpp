@@ -115,6 +115,14 @@ int main(int argc, char** argv)
         skelFrameData.ReserveBufferMemory();
         skelReader.MoveCursorAtFileBeginning();
 
+        KinectWriter writerRaw;
+        KinectWriter writerProcessed;
+
+        hr = writerRaw.Init((writeDir + L"/skelRaw.txt").c_str());
+        ExitIfHRFailed(hr, "Failed to init skelRaw writer");
+        hr = writerProcessed.Init((writeDir + L"/skelProc.txt").c_str());
+        ExitIfHRFailed(hr, "Failed to init skelProc writer");
+
         for (int i = 0; i < usefullSegments.size(); i++)
         {
             auto& segment = usefullSegments[i];
@@ -125,11 +133,11 @@ int main(int argc, char** argv)
             auto startTime = segment.first;
             auto endTime = segment.second;
 
-            std::vector<double> startPos;
-            startPos.resize(3);
+
+            std::vector<std::vector<double>> startPosV;
+            startPosV.resize(JointType_Count);
             std::vector<double> currPos;
             currPos.resize(3);
-
             bool isFirstPos = true;
             mwArray in_startPos(1, 3, mxClassID::mxDOUBLE_CLASS);
 
@@ -144,48 +152,68 @@ int main(int argc, char** argv)
                 }
                 else if (skelFrameData.timestamp > startTime)
                 {
+                    writerRaw.WriteFrame(&skelFrameData);
                     Joint* joints = reinterpret_cast<Joint*>(skelFrameData.pBuffer);
-                    CameraSpacePoint currSpacePoint = joints[JointType_SpineBase].Position;
-                    currPos[0] = currSpacePoint.X;
-                    currPos[1] = currSpacePoint.Y;
-                    currPos[2] = currSpacePoint.Z;
 
-                    if (isFirstPos)
-                    {
-                        startPos = currPos;
-                        in_startPos.SetData(startPos.data(), 3);
-                        isFirstPos = false;
+                    for (int i = 0; i < JointType_Count; i++) {
+
+                        auto& startPos = startPosV[i];
+
+                        int posX = 2;
+                        int posY = 0;
+                        int posZ = 1;
+                        
+                        /*int posX = 0;
+                        int posZ = 1;
+                        int posY = 2;*/
+
+
+                        CameraSpacePoint currSpacePoint = joints[i].Position;
+                        currPos[posX] = currSpacePoint.X;
+                        currPos[posY] = currSpacePoint.Y;
+                        currPos[posZ] = currSpacePoint.Z;
+
+                        if (isFirstPos)
+                        {
+                            startPos = currPos;
+                            in_startPos.SetData(startPos.data(), 3);
+                        }
+
+                        mwArray in_angle(1, 1, mxClassID::mxDOUBLE_CLASS);
+                        mwArray in_currPos(1, 3, mxClassID::mxDOUBLE_CLASS);
+                        mwArray out(1, 3, mxClassID::mxDOUBLE_CLASS);
+
+                        in_angle = angle;
+                        in_currPos.SetData(currPos.data(), 3);
+
+                        GetRotatedCoordinate(1, out, in_angle, in_currPos, in_startPos);
+
+                        CameraSpacePoint rotatedPoint;
+
+                        double outData[3];
+                        out.GetData(outData, 3);
+
+                        //TODO properly assign values
+                        /*rotatedPoint.X = outData[0];
+                        rotatedPoint.Y = outData[1];
+                        rotatedPoint.Z = outData[2];*/
+
+                        rotatedPoint.Z = outData[posZ];
+                        rotatedPoint.Y = outData[posY];
+                        rotatedPoint.X = outData[posX];
+                        //rotatedPoint.X = rotatedPoint.X * (-1.0);
+
+                        joints[i].Position = rotatedPoint;
+
+                        rotatedPoints.push_back(rotatedPoint);
                     }
 
-                    mwArray in_angle(1, 1, mxClassID::mxDOUBLE_CLASS);
-                    mwArray in_currPos(1, 3, mxClassID::mxDOUBLE_CLASS);
-                    mwArray out(1, 3, mxClassID::mxDOUBLE_CLASS);
-
-                    in_angle = angle;
-                    in_currPos.SetData(currPos.data(), 3);
-
-                    std::cout << in_angle << std::endl;
-
-                    GetRotatedCoordinate(1, out, in_angle, in_currPos, in_startPos);
-
-                    CameraSpacePoint rotatedPoint;
-
-                    double outData[3];
-                    out.GetData(outData, 3);
-
-                    //TODO properly assign values
-                    /*rotatedPoint.X = outData[0];
-                    rotatedPoint.Y = outData[1];
-                    rotatedPoint.Z = outData[2];*/
-
-                    rotatedPoint.Z = outData[0];
-                    rotatedPoint.Y = outData[1];
-                    rotatedPoint.X = outData[2];
-
-                    rotatedPoints.push_back(rotatedPoint);
+                    writerProcessed.WriteFrame(&skelFrameData);
                 }
+
+                if (isFirstPos)
+                    isFirstPos = false;
             }
-            std::cout << "breakpoint was here";
         }
     }
 

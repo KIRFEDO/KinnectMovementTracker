@@ -23,7 +23,7 @@ namespace FileWriters {
 
         if (SUCCEEDED(hr))
         {
-            os.open(targetDir, std::ios::out | std::ios::binary | std::ios::app);
+            os.open(targetDir, std::ios::out | std::ios::binary | std::ios::trunc);
             hr = os.is_open() ? S_OK : E_HANDLE;
         }
 
@@ -79,7 +79,7 @@ namespace FileWriters {
 
         if (SUCCEEDED(hr))
         {
-            os.open(targetDir, std::ios::out | std::ios::binary | std::ios::app);
+            os.open(targetDir, std::ios::out | std::ios::binary | std::ios::trunc);
             hr = os.is_open() ? S_OK : E_HANDLE;
         }
 

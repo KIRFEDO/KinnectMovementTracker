@@ -101,7 +101,7 @@ class App
 		KinectWriter m_writerSkeletonMode;
 
 		//Readers
-		KinectReader m_readerDepthMode;
+		KinectReader m_reader;
 
 		//Recording data
 		std::wstring m_recordingDirectoryPath;
