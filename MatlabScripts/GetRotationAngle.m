@@ -1,7 +1,7 @@
-function rotationAngle = GetRotationAngle(t, axisZ, axisX)
-    progressionZ = polyfit(t, axisZ, 1);
-    progressionX = polyfit(t, axisX, 1);
+function rotationAngle = GetRotationAngle(t, axisX, axisZ)
 
-    % rotationAngle = atan2(-progressionX(1), progressionZ(1));
-    rotationAngle = atan2(-progressionZ(1), progressionX(1));
+    progressionX = polyfit(t, axisX, 1);
+    progressionZ = polyfit(t, axisZ, 1);
+
+    rotationAngle = atan2(-progressionX(1), progressionZ(1));
 end

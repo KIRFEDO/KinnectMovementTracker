@@ -59,6 +59,10 @@ int main(int argc, char** argv)
     std::vector<double> angles;
     std::vector<double> anglesInDegress;
 
+    /*
+        TODO add segment filtering by angle value
+    */
+
     //Angles extraction
     {
         std::vector<double> t;
@@ -90,16 +94,21 @@ int main(int argc, char** argv)
                 }
             }
 
+            // multiplication by -1.0 is neccessary in order
+            // to calculate angles in -90 to +90 degrees range
+            for (auto& z_sample : z)
+                z_sample *= -1.0;
+
             mwArray in_t(1, t.size(), mxClassID::mxDOUBLE_CLASS);
-            mwArray in_axisZ(1, t.size(), mxClassID::mxDOUBLE_CLASS);
             mwArray in_axisX(1, t.size(), mxClassID::mxDOUBLE_CLASS);
+            mwArray in_axisZ(1, t.size(), mxClassID::mxDOUBLE_CLASS);
             mwArray out(1);
 
             in_t.SetData(t.data(), t.size());
-            in_axisZ.SetData(z.data(), z.size());
             in_axisX.SetData(x.data(), x.size());
+            in_axisZ.SetData(z.data(), z.size());
 
-            GetRotationAngle(1, out, in_t, in_axisZ, in_axisX);
+            GetRotationAngle(1, out, in_t, in_axisX, in_axisZ);
             angles.push_back(out);
             anglesInDegress.push_back((double)out * 180 / 3.1415926);
 
@@ -126,13 +135,10 @@ int main(int argc, char** argv)
         for (int i = 0; i < usefullSegments.size(); i++)
         {
             auto& segment = usefullSegments[i];
-            auto angle = angles[i];
-            
-            std::vector<CameraSpacePoint> rotatedPoints;
+            auto& angle = angles[i];
 
             auto startTime = segment.first;
             auto endTime = segment.second;
-
 
             std::vector<std::vector<double>> startPosV;
             startPosV.resize(JointType_Count);
@@ -159,15 +165,10 @@ int main(int argc, char** argv)
 
                         auto& startPos = startPosV[i];
 
-                        int posX = 2;
-                        int posY = 0;
-                        int posZ = 1;
+                        int posX = 0;
+                        int posY = 1;
+                        int posZ = 2;
                         
-                        /*int posX = 0;
-                        int posZ = 1;
-                        int posY = 2;*/
-
-
                         CameraSpacePoint currSpacePoint = joints[i].Position;
                         currPos[posX] = currSpacePoint.X;
                         currPos[posY] = currSpacePoint.Y;
@@ -188,24 +189,13 @@ int main(int argc, char** argv)
 
                         GetRotatedCoordinate(1, out, in_angle, in_currPos, in_startPos);
 
-                        CameraSpacePoint rotatedPoint;
+                        CameraSpacePoint& cameraSpacePoint = joints[i].Position;
 
                         double outData[3];
-                        out.GetData(outData, 3);
+                        out.GetData(outData, 3);                        
 
-                        //TODO properly assign values
-                        /*rotatedPoint.X = outData[0];
-                        rotatedPoint.Y = outData[1];
-                        rotatedPoint.Z = outData[2];*/
-
-                        rotatedPoint.Z = outData[posZ];
-                        rotatedPoint.Y = outData[posY];
-                        rotatedPoint.X = outData[posX];
-                        //rotatedPoint.X = rotatedPoint.X * (-1.0);
-
-                        joints[i].Position = rotatedPoint;
-
-                        rotatedPoints.push_back(rotatedPoint);
+                        cameraSpacePoint.X = outData[0];
+                        cameraSpacePoint.Z = outData[2];
                     }
 
                     writerProcessed.WriteFrame(&skelFrameData);
@@ -261,13 +251,3 @@ void ExitIfHRFailed(HRESULT hr, std::string errorMsg)
         exit(-1);
     }
 }
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

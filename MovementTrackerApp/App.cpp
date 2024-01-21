@@ -11,6 +11,8 @@
 
 using namespace KinectAdapters;
 
+VIEW_MODE VIEW_MODE_FLAG_READING;
+
 App::App(HINSTANCE hInstCurr, int nCmdShow)
 {
 	m_hInstCurr = hInstCurr;
@@ -36,7 +38,8 @@ HRESULT App::run()
 	std::wstring path = L"C:/BuffEnv/Processed/skelProc.txt";
 
 	//std::wstring path = L"C:/BuffEnv/Live/depth.txt";
-	//std::wstring path = L"C:/BuffEnv/Processed/skelRaw.txt";
+
+	VIEW_MODE_FLAG_READING = VIEW_MODE::SKELETON;
 
 	hr = m_reader.Init(path.c_str());
 
@@ -279,15 +282,22 @@ HRESULT App::ReadingModeIteration()
 {
 	//Snippet for opening one frame from the file below
 	//In case of using this snippet additional delition of pBuffer is needed
-	
+
 	HRESULT hr_depthMode = E_FAIL;
-	HRESULT hr_skeletonMode = S_OK;
+	HRESULT hr_skeletonMode = E_FAIL;
+	
+	FrameData* frameData = nullptr;
 
-	//Depth mode
-	//DepthModeFrameData* frameData = new DepthModeFrameData(nullptr);
-
-	//Skeleton mode
-	SkeletonModeFrameData* frameData = new SkeletonModeFrameData(nullptr);
+	if (VIEW_MODE_FLAG_READING == VIEW_MODE::DEPTH)
+	{
+		hr_depthMode = S_OK;
+		frameData = new DepthModeFrameData(nullptr);
+	}
+	else
+	{
+		hr_skeletonMode = S_OK;
+		frameData = new SkeletonModeFrameData(nullptr);
+	}
 
 
 	frameData->ReserveBufferMemory();
@@ -303,8 +313,7 @@ HRESULT App::ReadingModeIteration()
 
 	skeletonModeData->joints = reinterpret_cast<Joint*>(frameData->pBuffer);
 
-	VIEW_MODE_FLAG = VIEW_MODE::SKELETON;
-	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG_READING, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
 	HRESULT hr = S_OK;
 
 	delete depthModeData;

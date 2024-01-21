@@ -318,7 +318,7 @@ int main()
             cameraSpacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase].Position;
             spacePoints[spacePointIndex] = pJoints[JointType::JointType_SpineBase];
             auto const now = std::chrono::system_clock::now();
-            times[spacePointIndex] = (now - startTime).count();
+            times[spacePointIndex] = (now - startTime).count() / 10000.0;
 
             system("cls");
             //printSpacePoints(spacePointIndex);
@@ -337,17 +337,20 @@ int main()
                 dataT[i] = times[currIdx];
                 dataAxisZ[i] = point.Position.Z;
                 dataAxisX[i] = point.Position.X;
-                currIdx++;
+                currIdx = getNext(currIdx);
             }
 
             in_t.SetData(dataT, tabSize);
             in_axisZ.SetData(dataAxisZ, tabSize);
             in_axisX.SetData(dataAxisX, tabSize);
 
-            GetRotationAngle(1, out, in_t, in_axisZ, in_axisX);
+            GetRotationAngle(1, out, in_t, in_axisX, in_axisZ);
             auto angle = std::atan2(delta_x, delta_z);
             std::cout << "C++ angle:" << angle * 180 / 3.1415926 << std::endl;
             std::cout << "Matlab angle:" << (double) out * 180 / 3.1415926 << std::endl;
+            GetRotationAngle_KF(1, out, in_t, in_axisX, in_axisZ);
+            std::cout << "Matlab angle KF:" << (double) out * 180 / 3.1415926 << std::endl;
+            std::cout << "Time:" << dataT[tabSize-1] << std::endl;
 
             spacePointIndex++;
             if (spacePointIndex == tabSize)
