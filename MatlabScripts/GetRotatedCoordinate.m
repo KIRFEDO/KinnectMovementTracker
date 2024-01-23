@@ -1,4 +1,4 @@
-function rotatedCoordinate = GetRotatedCoordinate(angle, currPos, startPos)
+function rotatedCoordinate = GetRotatedCoordinate(angle, currPos)
 
     angleVal = angle(1,1);
     cy = cos(angleVal);

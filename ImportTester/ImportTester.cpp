@@ -348,8 +348,6 @@ int main()
             auto angle = std::atan2(delta_x, delta_z);
             std::cout << "C++ angle:" << angle * 180 / 3.1415926 << std::endl;
             std::cout << "Matlab angle:" << (double) out * 180 / 3.1415926 << std::endl;
-            GetRotationAngle_KF(1, out, in_t, in_axisX, in_axisZ);
-            std::cout << "Matlab angle KF:" << (double) out * 180 / 3.1415926 << std::endl;
             std::cout << "Time:" << dataT[tabSize-1] << std::endl;
 
             spacePointIndex++;

@@ -38,6 +38,7 @@ HRESULT App::run()
 	std::wstring path = L"C:/BuffEnv/Processed/skelProc.txt";
 
 	//std::wstring path = L"C:/BuffEnv/Live/depth.txt";
+	//std::wstring path = L"C:/BuffEnv/Processed/depthRaw.txt";
 
 	VIEW_MODE_FLAG_READING = VIEW_MODE::SKELETON;
 

@@ -120,16 +120,24 @@ int main(int argc, char** argv)
 
     //Position rotation
     {
+        DepthModeFrameData depthFrameData(nullptr);
+        depthFrameData.ReserveBufferMemory();
+
         SkeletonModeFrameData skelFrameData(nullptr);
         skelFrameData.ReserveBufferMemory();
+
+        depthReader.MoveCursorAtFileBeginning();
         skelReader.MoveCursorAtFileBeginning();
 
-        KinectWriter writerRaw;
-        KinectWriter writerProcessed;
+        KinectWriter writerDepthExtracted;
+        KinectWriter writerSkelExtractedRaw;
+        KinectWriter writerSkelExtractedRotated;
 
-        hr = writerRaw.Init((writeDir + L"/skelRaw.txt").c_str());
+        hr = writerDepthExtracted.Init((writeDir + L"/depthRaw.txt").c_str());
+        ExitIfHRFailed(hr, "Failed to init depthRaw writer");
+        hr = writerSkelExtractedRaw.Init((writeDir + L"/skelRaw.txt").c_str());
         ExitIfHRFailed(hr, "Failed to init skelRaw writer");
-        hr = writerProcessed.Init((writeDir + L"/skelProc.txt").c_str());
+        hr = writerSkelExtractedRotated.Init((writeDir + L"/skelProc.txt").c_str());
         ExitIfHRFailed(hr, "Failed to init skelProc writer");
 
         for (int i = 0; i < usefullSegments.size(); i++)
@@ -140,12 +148,8 @@ int main(int argc, char** argv)
             auto startTime = segment.first;
             auto endTime = segment.second;
 
-            std::vector<std::vector<double>> startPosV;
-            startPosV.resize(JointType_Count);
             std::vector<double> currPos;
             currPos.resize(3);
-            bool isFirstPos = true;
-            mwArray in_startPos(1, 3, mxClassID::mxDOUBLE_CLASS);
 
             while (!skelReader.IsEOF())
             {
@@ -158,12 +162,10 @@ int main(int argc, char** argv)
                 }
                 else if (skelFrameData.timestamp > startTime)
                 {
-                    writerRaw.WriteFrame(&skelFrameData);
+                    writerSkelExtractedRaw.WriteFrame(&skelFrameData);
                     Joint* joints = reinterpret_cast<Joint*>(skelFrameData.pBuffer);
 
                     for (int i = 0; i < JointType_Count; i++) {
-
-                        auto& startPos = startPosV[i];
 
                         int posX = 0;
                         int posY = 1;
@@ -174,12 +176,6 @@ int main(int argc, char** argv)
                         currPos[posY] = currSpacePoint.Y;
                         currPos[posZ] = currSpacePoint.Z;
 
-                        if (isFirstPos)
-                        {
-                            startPos = currPos;
-                            in_startPos.SetData(startPos.data(), 3);
-                        }
-
                         mwArray in_angle(1, 1, mxClassID::mxDOUBLE_CLASS);
                         mwArray in_currPos(1, 3, mxClassID::mxDOUBLE_CLASS);
                         mwArray out(1, 3, mxClassID::mxDOUBLE_CLASS);
@@ -187,7 +183,7 @@ int main(int argc, char** argv)
                         in_angle = angle;
                         in_currPos.SetData(currPos.data(), 3);
 
-                        GetRotatedCoordinate(1, out, in_angle, in_currPos, in_startPos);
+                        GetRotatedCoordinate(1, out, in_angle, in_currPos);
 
                         CameraSpacePoint& cameraSpacePoint = joints[i].Position;
 
@@ -198,11 +194,23 @@ int main(int argc, char** argv)
                         cameraSpacePoint.Z = outData[2];
                     }
 
-                    writerProcessed.WriteFrame(&skelFrameData);
+                    writerSkelExtractedRotated.WriteFrame(&skelFrameData);
                 }
+            }
 
-                if (isFirstPos)
-                    isFirstPos = false;
+            while (!depthReader.IsEOF())
+            {
+                HRESULT hr = depthReader.ReadFrame(&depthFrameData);
+                ExitIfHRFailed(hr, "Failed to read skeleton mode frame\n");
+
+                if (depthFrameData.timestamp > endTime)
+                {
+                    break;
+                }
+                else if (depthFrameData.timestamp > startTime)
+                {
+                    writerDepthExtracted.WriteFrame(&depthFrameData);
+                }
             }
         }
     }
