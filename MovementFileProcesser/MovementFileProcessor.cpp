@@ -140,6 +140,14 @@ int main(int argc, char** argv)
         hr = writerSkelExtractedRotated.Init((writeDir + L"/skelProc.txt").c_str());
         ExitIfHRFailed(hr, "Failed to init skelProc writer");
 
+
+        // Wagner
+        std::ofstream rawX,rawY,rawZ;
+        std::ofstream procX,procY,procZ;
+        std::ofstream osT;
+        // end Wagner
+
+
         for (int i = 0; i < usefullSegments.size(); i++)
         {
             auto& segment = usefullSegments[i];
@@ -147,6 +155,31 @@ int main(int argc, char** argv)
 
             auto startTime = segment.first;
             auto endTime = segment.second;
+
+            //Wagner
+            auto pathCore = writeDir + L"/" + std::to_wstring(segment.first) + L"_" + std::to_wstring(segment.second);
+            auto ext = L".txt";
+            std::wstring JointTypeWStr;
+            bool isSpineBase = false;
+            int targetJointType;
+            if (isSpineBase)
+            {
+                JointTypeWStr = L"SpineBase";
+                targetJointType = JointType_SpineBase;
+            }
+            else
+            {
+                JointTypeWStr = L"KneeLeft";
+                targetJointType = JointType_KneeLeft;
+            }
+            rawX.open(pathCore + L"_rawX_" + JointTypeWStr + ext, std::ios::binary | std::ios::trunc);
+            rawY.open(pathCore + L"_rawY_" + JointTypeWStr + ext, std::ios::binary | std::ios::trunc);
+            rawZ.open(pathCore + L"_rawZ_" + JointTypeWStr + ext, std::ios::binary | std::ios::trunc);
+            procX.open(pathCore + L"_procX_" + JointTypeWStr+ ext, std::ios::binary | std::ios::trunc);
+            procY.open(pathCore + L"_procY_" + JointTypeWStr+ ext, std::ios::binary | std::ios::trunc);
+            procZ.open(pathCore + L"_procZ_" + JointTypeWStr+ ext, std::ios::binary | std::ios::trunc);
+            osT.open(pathCore + L"_t" + ext, std::ios::binary | std::ios::trunc);
+            // end Wagner
 
             std::vector<double> currPos;
             currPos.resize(3);
@@ -176,6 +209,15 @@ int main(int argc, char** argv)
                         currPos[posY] = currSpacePoint.Y;
                         currPos[posZ] = currSpacePoint.Z;
 
+                        //Wagner
+                        if (i == targetJointType) {
+                            osT << skelFrameData.timestamp << ", ";
+                            rawX << currSpacePoint.X << ", ";
+                            rawY << currSpacePoint.Y << ", ";
+                            rawZ << currSpacePoint.Z << ", ";
+                        }
+                        // end Wagner
+
                         mwArray in_angle(1, 1, mxClassID::mxDOUBLE_CLASS);
                         mwArray in_currPos(1, 3, mxClassID::mxDOUBLE_CLASS);
                         mwArray out(1, 3, mxClassID::mxDOUBLE_CLASS);
@@ -192,11 +234,30 @@ int main(int argc, char** argv)
 
                         cameraSpacePoint.X = outData[0];
                         cameraSpacePoint.Z = outData[2];
+
+                        //Wagner
+                        if (i == targetJointType)
+                        {
+                            procX << cameraSpacePoint.X << ", ";
+                            procY << cameraSpacePoint.Y << ", ";
+                            procZ << cameraSpacePoint.Z << ", ";
+                        }
+                        // end Wagner
                     }
 
                     writerSkelExtractedRotated.WriteFrame(&skelFrameData);
                 }
             }
+
+            //Wagner
+            rawX.close();
+            rawY.close();
+            rawZ.close();
+            procX.close();
+            procY.close();
+            procZ.close();
+            osT.close();
+            // end Wagner
 
             while (!depthReader.IsEOF())
             {

@@ -46,6 +46,7 @@ HRESULT App::run()
 
 	while (WM_QUIT != msg.message)
 	{
+		UpdateGUI();
 		if (APP_MODE_FLAG == APP_MODE::LIVE)
 			LiveModeIteration();
 		else
@@ -124,10 +125,18 @@ HRESULT App::InitStatic()
 	
 	m_hWndStaticCurrentMode = CreateWindowW(L"static", L"Current mode: LIVE", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
 		xOffset3rdCol, 25, xWidth3rdCol, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	
+	m_hWndStaticRecordingTime = CreateWindowW(L"static", L"0:00", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		xOffset2ndCol + 175+140+10, 400, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+
+	m_hWndStaticReadingInformation = CreateWindowW(L"static", L"Recording...", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		xOffset2ndCol + 175, 460, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	
 
 	if (!(m_hWndStaticPatientName &&
 		m_hWndStaticAdditonalInfo &&
-		m_hWndStaticFilePath))
+		m_hWndStaticFilePath &&
+		m_hWndStaticReadingInformation))
 		return E_HANDLE;
 
 	return S_OK;
@@ -136,12 +145,12 @@ HRESULT App::InitStatic()
 HRESULT App::InitEdit()
 {
 	m_hWndEditPatientName = CreateWindowW(L"edit", L"Patient name", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-		xOffset2ndCol, 25, xWidth2ndCol, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
+		xOffset2ndCol, 25, xWidth2ndCol, 25, m_hWndMain, (HMENU)EDIT_PATIENT_NAME, m_hInstCurr, nullptr);
 
 	m_hWndEditAdditionalInfo = CreateWindowW(L"edit", L"Additional info", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOVSCROLL | ES_MULTILINE | ES_LEFT | WS_VSCROLL,
 		xOffset2ndCol, 75, xWidth2ndCol, 250, m_hWndMain, (HMENU)EDIT_ADDITIONAL_INFO, m_hInstCurr, nullptr);
 
-	m_hWndEditOutputFilePath = CreateWindowW(L"edit", L"File path", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+	m_hWndOutputPath = CreateWindowW(L"edit", L"Output path", WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
 		xOffset2ndCol, 350, xWidth2ndCol, 25, m_hWndMain, (HMENU)EDIT_FILE_PATH, m_hInstCurr, nullptr);
 
 	if (!(m_hWndEditPatientName &&
@@ -153,11 +162,11 @@ HRESULT App::InitEdit()
 
 HRESULT App::InitButtons()
 {
-	m_hWndBtnChoseOutputFile = CreateWindowW(L"button", L"Chose output file", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+	m_hWndBtnChoseOutputFile = CreateWindowW(L"button", L"Chose output folder", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
 		xOffset2ndCol, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_CHOOSE_FILE, m_hInstCurr, nullptr);
 
 	m_hWndBtnStartStopRecording = CreateWindowW(L"button", L"Start/Stop recording", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
-		xOffset2ndCol+140+25, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
+		xOffset2ndCol + 175, 400, 140, 50, m_hWndMain, (HMENU)BUTTON_START_STOP_RECORDING, m_hInstCurr, nullptr);
 
 	m_hWndBtnSwitchAppMode = CreateWindowW(L"button", L"Switch app mode", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
 		xOffset3rdCol, 75, xWidth3rdCol, 50, m_hWndMain, (HMENU)BUTTON_SWITCH_APP_MODE, m_hInstCurr, nullptr);
@@ -214,12 +223,20 @@ HRESULT App::InitRecordingCounters()
 {
 	m_counterDepthModeFrames = 0;
 	m_counterSkeletonModeFrames = 0;
+	timeInSec = 0;
+	timeInMin = 0;
 	m_recordingStartTime = std::chrono::system_clock::now();
+	
 	return S_OK;
 }
 
 HRESULT App::InitRecordingFolder()
 {
+	auto pathLength = GetWindowTextLengthW(m_hWndOutputPath);
+	wchar_t* buffer = new wchar_t[pathLength+1];
+	GetWindowTextW(m_hWndOutputPath, buffer, pathLength + 1);
+	m_recordingDirectoryPath = buffer;
+	m_recordingDirectoryPath += L"\\MovementTracker_Temp";
 	return CreateDirectoryW(m_recordingDirectoryPath.c_str(), NULL) ? S_OK : E_FAIL;
 }
 
@@ -227,9 +244,9 @@ HRESULT App::InitFileWriters()
 {
 	HRESULT hr = E_FAIL;
 	
-	std::wstring mdPath = m_recordingDirectoryPath + L"metadata.txt";
-	std::wstring dmPath = m_recordingDirectoryPath + L"depth.txt";
-	std::wstring smPath = m_recordingDirectoryPath + L"skel.txt";
+	std::wstring mdPath = m_recordingDirectoryPath + L"\\metadata.txt";
+	std::wstring dmPath = m_recordingDirectoryPath + L"\\depth.txt";
+	std::wstring smPath = m_recordingDirectoryPath + L"\\skel.txt";
 	hr = m_writerMetadata.Init(mdPath.c_str());
 	if(SUCCEEDED(hr))
 		hr = m_writerDepthMode.Init(dmPath.c_str());
@@ -240,6 +257,34 @@ HRESULT App::InitFileWriters()
 		ResetFileWriters();
 
 	return hr;
+}
+
+HRESULT App::UpdateGUI()
+{
+	if (APP_MODE_FLAG == APP_MODE::LIVE)
+	{
+		bool enableWhenNotRecording = RECORD_DATA_FLAG == RECORD_DATA_STATE::DO_NOT_RECORD;
+		auto showWhenRecording = enableWhenNotRecording ? SW_HIDE : SW_SHOW;
+
+		EnableWindow(m_hWndEditPatientName, enableWhenNotRecording);
+		EnableWindow(m_hWndEditAdditionalInfo, enableWhenNotRecording);
+		EnableWindow(m_hWndOutputPath, enableWhenNotRecording);
+
+		ShowWindow(m_hWndStaticReadingInformation, showWhenRecording);
+		ShowWindow(m_hWndStaticRecordingTime, showWhenRecording);
+
+		EnableWindow(m_hWndBtnSwitchAppMode, enableWhenNotRecording);
+		EnableWindow(m_hWndBtnChoseOutputFile, enableWhenNotRecording);
+
+
+		std::wstring recordingButtonText = showWhenRecording ? L"Stop recording" : L"Start recording";
+		SetWindowText(m_hWndBtnStartStopRecording, recordingButtonText.c_str());
+	}
+	else
+	{
+
+	}
+	return S_OK;
 }
 
 HRESULT App::LiveModeIteration()
@@ -329,19 +374,44 @@ HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_de
 	switch (recordingState)
 	{
 		case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
-			InitRecordingFolder();
+			if (FAILED(InitRecordingFolder()))
+			{
+				RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+				MessageBox(
+					m_hWndMain,
+					L"Can`t initiate recording in that file",
+					L"File path is not valid",
+					MB_OK | MB_ICONERROR
+				);
+				break;
+			}
 			InitRecordingCounters();
-			InitFileWriters();
+			if (FAILED(InitFileWriters()))
+			{
+				RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+				ResetFileWriters();
+				MessageBox(
+					m_hWndMain,
+					L"Can`t initiate file writers",
+					L"File path is not valid",
+					MB_OK | MB_ICONERROR
+				);
+				break;
+			}
 			CreateHeaderFile();
 			RECORD_DATA_FLAG = RECORD_DATA_STATE::RECORDING;
+			break;
 		case RECORD_DATA_STATE::RECORDING:
 			WriteDepthModeData(pDepthModeData, hr_depthMode);
 			WriteSkeletonModeData(pSkeletonModeData, hr_skeletonMode);
+			UpdateRecordingTimer();
 			break;
 		case RECORD_DATA_STATE::FINISH_RECORDING:
 			WriteCounters();
 			ResetFileWriters();
+			ResetRecordingTimer();
 			RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
+			break;
 	}
 
 	return S_OK;
@@ -354,6 +424,12 @@ HRESULT App::ResetFileWriters()
 	hr = m_writerSkeletonMode.Reset();
 	hr = m_writerMetadata.Reset();
 	return hr;
+}
+
+HRESULT App::ResetRecordingTimer()
+{
+	SetWindowText(m_hWndStaticRecordingTime, L"0:00");
+	return S_OK;
 }
 
 HRESULT App::WriteDepthModeData(DepthModeData* depthModeData, HRESULT hr_depthMode)
@@ -389,6 +465,29 @@ HRESULT App::WriteCounters()
 	return m_writerMetadata.WriteFrameCounters(m_counterDepthModeFrames, m_counterSkeletonModeFrames);
 }
 
+HRESULT App::UpdateRecordingTimer()
+{
+	size_t timeInSecNew = GetTimeFromRecordingStart() / 1000;
+	size_t timeInMinNew = timeInSecNew / 60;
+	if (timeInSecNew != timeInSec || timeInMinNew != timeInMinNew)
+	{
+		timeInSec = timeInSecNew;
+		timeInMin = timeInMinNew;
+		std::wstring wstr_timeInSec;
+		if (timeInSecNew / 10 == 0)
+		{
+			wstr_timeInSec = L"0" + std::to_wstring(timeInSecNew);
+		}
+		else
+		{
+			wstr_timeInSec = std::to_wstring(timeInSecNew);
+		}
+		std::wstring timeStr = std::to_wstring(timeInMinNew) + L":" + wstr_timeInSec;
+		SetWindowText(m_hWndStaticRecordingTime, timeStr.c_str());
+	}
+	return S_OK;
+}
+
 time_t App::GetTimeFromRecordingStart()
 {
 	auto const now = std::chrono::system_clock::now();
@@ -399,7 +498,7 @@ time_t App::GetTimeFromRecordingStart()
 		max value of size_t is 4294967295 which is 429 secunds ~ 7 min. In order 
 		to extend this limit we are limiting precision to 10^-3. 
 	*/
-	return diff.count() / 10000;
+	return diff.count() / 10000; //in ms
 }
 
 HRESULT App::CreateHeaderFile()

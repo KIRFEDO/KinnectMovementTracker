@@ -8,9 +8,20 @@ VIEW_MODE VIEW_MODE_FLAG = VIEW_MODE::DEPTH;
 RECORD_DATA_STATE RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
 APP_MODE APP_MODE_FLAG = APP_MODE::LIVE;
 
-void OnClickChoseFile(int notificationCode)
+void OnClickChoseFile(int notificationCode, HWND hwnd)
 {
-    return;
+    BROWSEINFO bi{};
+    bi.hwndOwner = hwnd;
+    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+    if (pidl != NULL) {
+        wchar_t path[MAX_PATH];
+        auto filePathEdit = GetDlgItem(hwnd, EDIT_FILE_PATH);
+        if (SHGetPathFromIDList(pidl, path))
+        {
+            SetWindowText(filePathEdit, path);
+        }
+        CoTaskMemFree(pidl);
+    }
 }
 
 void OnClickStartStopRecording(int notificationCode)
@@ -100,7 +111,7 @@ LRESULT CALLBACK MainWindowProcessor(
             {
                 case BUTTON_CHOOSE_FILE:
                 {
-                    OnClickChoseFile(notificationCode);
+                    OnClickChoseFile(notificationCode, hwnd);
                     return 0;
                 }
                 case BUTTON_START_STOP_RECORDING:
@@ -118,6 +129,11 @@ LRESULT CALLBACK MainWindowProcessor(
                     return 0;
             }
             return 0;
+        }
+        case WM_CTLCOLORSTATIC:
+        {
+            SetBkColor((HDC)wParam, RGB(255, 255, 255));
+            return (LRESULT)GetStockObject(WHITE_BRUSH);
         }
         default:
             break;

@@ -35,6 +35,7 @@ class App
 		HRESULT InitApp();
 
 		//Cyclic app functions
+		HRESULT UpdateGUI();
 		HRESULT LiveModeIteration();
 		HRESULT ReadingModeIteration();
 		HRESULT HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
@@ -46,16 +47,18 @@ class App
 		HRESULT InitRecordingCounters();
 		HRESULT CreateHeaderFile();
 		HRESULT ResetFileWriters();
+		HRESULT ResetRecordingTimer();
 		HRESULT WriteDepthModeData(DepthModeData* depthModeData, HRESULT hr_depthMode);
 		HRESULT WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT hr_skeletonMode);
 		HRESULT WriteCounters();
+		HRESULT UpdateRecordingTimer();
 
 		time_t GetTimeFromRecordingStart();
 
 		HWND m_hWndMain;									// main window
 		HWND m_hWndKinect;									// window for kinect rendering
 
-		HWND m_hWndEditOutputFilePath;						// target file path
+		HWND m_hWndOutputPath;								// target output path
 		HWND m_hWndEditPatientName;							// patient name
 		HWND m_hWndEditAdditionalInfo;						// additional info
 
@@ -68,6 +71,8 @@ class App
 		HWND m_hWndStaticAdditonalInfo;						// additional info
 		HWND m_hWndStaticFilePath;							// file path
 		HWND m_hWndStaticCurrentMode;						// current app mode info
+		HWND m_hWndStaticReadingInformation;				// information about reading process
+		HWND m_hWndStaticRecordingTime;						// recording time
 
 		//App offsets
 		const UINT16 xOffset1stCol = 550;
@@ -107,6 +112,8 @@ class App
 		std::wstring m_recordingDirectoryPath;
 		size_t m_counterDepthModeFrames;
 		size_t m_counterSkeletonModeFrames;
-		std::chrono::time_point<std::chrono::system_clock> m_recordingStartTime;		
+		std::chrono::time_point<std::chrono::system_clock> m_recordingStartTime;
+		size_t timeInSec;
+		size_t timeInMin;
 };
 
