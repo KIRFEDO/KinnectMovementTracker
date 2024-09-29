@@ -94,7 +94,7 @@ HRESULT App::InitGUI()
 	 Fixed size 1280x700 used to get rid od of scaling issues further on
 	*/
 	m_hWndMain = CreateWindowW(m_mainWindowName, m_appTitle, WS_OVERLAPPEDWINDOW,
-		0, 0, 1280, 700, nullptr, nullptr, m_hInstCurr, nullptr);
+		0, 0, 1280, 1000, nullptr, nullptr, m_hInstCurr, nullptr);
 
 	m_hWndKinect = CreateWindowW(m_kinectViewWindowName, (LPCTSTR)NULL, WS_CHILD | WS_VISIBLE,
 		25, 25, 500, 500, m_hWndMain, nullptr, m_hInstCurr, nullptr);
@@ -114,29 +114,86 @@ HRESULT App::InitGUI()
 
 HRESULT App::InitStatic()
 {
+	InitStatic_UserControls();
+	InitStatic_BodyTrackingStatus();
+
+	return S_OK;
+}
+
+HRESULT App::InitStatic_UserControls()
+{
 	m_hWndStaticPatientName = CreateWindowW(L"static", L"Patient name:", WS_CHILD | WS_VISIBLE | SS_LEFT,
 		xOffset1stCol, 25, xWidth1stCol, 25, m_hWndMain, (HMENU)STATIC_PATIENT_NAME, m_hInstCurr, nullptr);
-	
+
 	m_hWndStaticAdditonalInfo = CreateWindowW(L"static", L"Additional info:", WS_CHILD | WS_VISIBLE | SS_LEFT,
 		xOffset1stCol, 75, xWidth1stCol, 250, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
-	
+
 	m_hWndStaticFilePath = CreateWindowW(L"static", L"File path:", WS_CHILD | WS_VISIBLE | SS_LEFT,
 		xOffset1stCol, 350, xWidth1stCol, 25, m_hWndMain, (HMENU)STATIC_ADDITIONAL_INFO, m_hInstCurr, nullptr);
-	
+
 	m_hWndStaticCurrentMode = CreateWindowW(L"static", L"Current mode: LIVE", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
 		xOffset3rdCol, 25, xWidth3rdCol, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
-	
+
 	m_hWndStaticRecordingTime = CreateWindowW(L"static", L"0:00", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
-		xOffset2ndCol + 175+140+10, 400, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+		xOffset2ndCol + 175 + 140 + 10, 400, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
 
 	m_hWndStaticReadingInformation = CreateWindowW(L"static", L"Recording...", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
 		xOffset2ndCol + 175, 460, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
-	
 
-	if (!(m_hWndStaticPatientName &&
-		m_hWndStaticAdditonalInfo &&
-		m_hWndStaticFilePath &&
+	if(!(m_hWndStaticPatientName	&&
+		m_hWndStaticAdditonalInfo	&&
+		m_hWndStaticFilePath		&&
+		m_hWndStaticCurrentMode		&&
+		m_hWndStaticRecordingTime	&&
 		m_hWndStaticReadingInformation))
+		return E_HANDLE;
+
+	return S_OK;
+}
+
+HRESULT App::InitStatic_BodyTrackingStatus()
+{
+	m_hWndStaticBodyLabel1 = CreateWindowW(L"static", L"Body #1: ", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		190, 550, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyStatus1 = CreateWindowW(L"static", L"Untracked", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		350, 550, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyLabel2 = CreateWindowW(L"static", L"Body #2: ", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		190, 600, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyStatus2 = CreateWindowW(L"static", L"Untracked", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		350, 600, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyLabel3 = CreateWindowW(L"static", L"Body #3: ", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		190, 650, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyStatus3 = CreateWindowW(L"static", L"Untracked", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		350, 650, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyLabel4 = CreateWindowW(L"static", L"Body #4: ", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		190, 700, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyStatus4 = CreateWindowW(L"static", L"Untracked", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		350, 700, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyLabel5 = CreateWindowW(L"static", L"Body #5: ", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		190, 750, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyStatus5 = CreateWindowW(L"static", L"Untracked", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		350, 750, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyLabel6 = CreateWindowW(L"static", L"Body #6: ", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		190, 800, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+	m_hWndStaticBodyStatus6 = CreateWindowW(L"static", L"Untracked", WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
+		350, 800, 140, 50, m_hWndMain, (HMENU)STATIC_APP_MODE, m_hInstCurr, nullptr);
+
+	if (!(
+		m_hWndStaticBodyLabel1	&&
+		m_hWndStaticBodyStatus1	&&
+		m_hWndStaticBodyLabel2	&&
+		m_hWndStaticBodyStatus2	&&
+		m_hWndStaticBodyLabel2	&&
+		m_hWndStaticBodyStatus2	&&
+		m_hWndStaticBodyLabel3	&&
+		m_hWndStaticBodyStatus3	&&
+		m_hWndStaticBodyLabel4	&&
+		m_hWndStaticBodyStatus4	&&
+		m_hWndStaticBodyLabel5	&&
+		m_hWndStaticBodyStatus5	&&
+		m_hWndStaticBodyLabel6	&&
+		m_hWndStaticBodyStatus6
+		))
 		return E_HANDLE;
 
 	return S_OK;
@@ -200,7 +257,7 @@ HRESULT App::InitKinectRenderer()
 	int width, height;
 	std::tie(width, height) = m_depthMode.getFrameSize();
 
-	HRESULT hr = m_kinectRenderer.Init(m_hWndKinect, m_pD2DFactory, width, height, width * sizeof(RGBQUAD));
+	HRESULT hr = m_kinectRenderer.Init(m_hWndKinect, m_skeletonMode.getCoordinateMapperPtr(), width, height, width * sizeof(RGBQUAD));
 	
 	return hr;
 }
@@ -294,9 +351,11 @@ HRESULT App::LiveModeIteration()
 
 	DepthModeData* depthModeData = new DepthModeData();
 	hr_depthMode = m_depthMode.getCurrentFrame(depthModeData);
-	SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
-	hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
 
+	SkeletonModeData* skeletonModeData = new SkeletonModeData();
+	hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
+	if (SUCCEEDED(hr_skeletonMode))
+		UpdateTrackingStates();
 	/*{
 		//Snippet for opening one frame from the file below
 		//In case of using this snippet additional delition of pBuffer is needed
@@ -310,7 +369,6 @@ HRESULT App::LiveModeIteration()
 		res->nDepthMaxDistance = INT16_MAX;
 		hr = S_OK;
 	}*/
-
 
 	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
 	HandleDataRecording(RECORD_DATA_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
@@ -352,7 +410,7 @@ HRESULT App::ReadingModeIteration()
 	Sleep((DWORD) 30);
 	
 	DepthModeData* depthModeData = new DepthModeData();
-	SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
+	SkeletonModeData* skeletonModeData = new SkeletonModeData();
 
 	depthModeData->pBuffer = reinterpret_cast<UINT16*>(frameData->pBuffer);
 	depthModeData->nDepthMinReliableDistance = 0;
@@ -417,6 +475,32 @@ HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_de
 	return S_OK;
 }
 
+void App::UpdateTrackingStates()
+{
+	auto trackingState = new BOOLEAN[BODY_COUNT]{ FALSE };
+
+	m_skeletonMode.GetTrackingState(trackingState);
+	
+	for (int i = 0; i < BODY_COUNT; i++)
+	{
+		auto isTracked = trackingState[i];
+		
+		auto trackingStateInfoHwnd = GetBodyTrackingStateStatic(i+1);
+		std::wstring trackingStateInfoValue = isTracked == TRUE ? L"Tracked" : L"Untracked";
+
+		constexpr int buff_size = 30;
+		auto buff = new wchar_t[buff_size];
+		GetWindowText(trackingStateInfoHwnd, buff, buff_size);
+
+		auto res = wcscmp(buff, trackingStateInfoValue.c_str());
+
+		if(res!=0)
+			SetWindowText(trackingStateInfoHwnd, trackingStateInfoValue.c_str());
+	}
+	
+	delete[] trackingState;
+}
+
 HRESULT App::ResetFileWriters()
 {
 	HRESULT hr = S_OK;
@@ -474,7 +558,7 @@ HRESULT App::UpdateRecordingTimer()
 		timeInSec = timeInSecNew;
 		timeInMin = timeInMinNew;
 		std::wstring wstr_timeInSec;
-		if (timeInSecNew / 10 == 0)
+		if (timeInSecNew / 10 == 0) 
 		{
 			wstr_timeInSec = L"0" + std::to_wstring(timeInSecNew);
 		}
@@ -499,6 +583,28 @@ time_t App::GetTimeFromRecordingStart()
 		to extend this limit we are limiting precision to 10^-3. 
 	*/
 	return diff.count() / 10000; //in ms
+}
+
+HWND App::GetBodyTrackingStateStatic(int pos)
+{
+	switch (pos)
+	{
+	case 1:
+		return m_hWndStaticBodyStatus1;
+	case 2:
+		return m_hWndStaticBodyStatus2;
+	case 3:
+		return m_hWndStaticBodyStatus3;
+	case 4:
+		return m_hWndStaticBodyStatus4;
+	case 5:
+		return m_hWndStaticBodyStatus5;
+	case 6:
+		return m_hWndStaticBodyStatus6;
+	default:
+		throw std::runtime_error("Unhandled body id given");
+
+	}
 }
 
 HRESULT App::CreateHeaderFile()

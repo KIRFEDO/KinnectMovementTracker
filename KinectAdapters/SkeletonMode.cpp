@@ -1,5 +1,6 @@
 #include "SkeletonMode.h"
 #include <stdlib.h>
+#include <stdexcept>
 
 #define BODY_COUNT 6
 
@@ -70,15 +71,27 @@ namespace KinectAdapters
         return m_pBodyFrame->GetAndRefreshBodyData(BODY_COUNT, m_ppBodies);
     }
 
+    void SkeletonMode::GetTrackingState(BOOLEAN* trackingState)
+    {
+        if (trackingState == nullptr)
+            throw std::runtime_error("Tracking state array is corrupted");
+
+        if (*m_ppBodies == nullptr)
+            return;
+
+        for (int i = 0; i < BODY_COUNT; i++)
+        {
+            m_ppBodies[i]->get_IsTracked(trackingState+i);
+        }
+
+    }
+
     HRESULT SkeletonMode::getCurrentFrame(SkeletonModeData* data)
     {
         HRESULT hr;
         hr = AcquireLatestFrame();
         if (SUCCEEDED(hr))
             hr = UpdateBodies();
-        
-        if (FAILED(hr))
-            return hr;
 
         /*
             For now we need to track only one body.
@@ -87,21 +100,22 @@ namespace KinectAdapters
             that is why for now we are only looking for
             the tracked slot and do not map it in any way.
         */
-        INT8 bodyIdx = -1;
-        for (int i = 0; i<BODY_COUNT; i++) {
-            BOOLEAN isTracked;
-            IBody* body = m_ppBodies[i];
-            body->get_IsTracked(&isTracked);
-            if (isTracked) {
-                bodyIdx = i;
-                break;
-            }
-        }
 
-        if (bodyIdx != -1)
-            hr = getDataForChosenBody(data->joints, bodyIdx);
+        //INT8 bodyIdx = -1;
+        //for (int i = 0; i<BODY_COUNT; i++) {
+        //    BOOLEAN isTracked;
+        //    IBody* body = m_ppBodies[i];
+        //    body->get_IsTracked(&isTracked);
+        //    if (isTracked) {
+        //        bodyIdx = i;
+        //        break;
+        //    }
+        //}
 
-        return bodyIdx != -1 ? S_OK : E_PENDING;
+        //if (bodyIdx != -1)
+        //    getDataForChosenBody(data->joints, bodyIdx);
+
+        return hr;
     }
 
     HRESULT SkeletonMode::getDataForChosenBody(Joint* joints, UINT8 bodyIdx)

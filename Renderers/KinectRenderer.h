@@ -42,12 +42,12 @@ namespace Renderers
             /// Implied bits per pixel is 32
             /// </summary>
             /// <param name="hWnd">window to draw to</param>
-            /// <param name="pD2DFactory">already created D2D factory object</param>
+            /// <param name="coordinateMapper">Coordinate mapper from Skeleton mode</param>
             /// <param name="sourceWidth">width (in pixels) of image data to be drawn</param>
             /// <param name="sourceHeight">height (in pixels) of image data to be drawn</param>
             /// <param name="sourceStride">length (in bytes) of a single scanline</param>
             /// <returns>indicates success or failure</returns>
-            HRESULT Init(HWND hwnd, ID2D1Factory* pD2DFactory, int sourceWidth, int sourceHeight, int sourceStride);
+            HRESULT Init(HWND hWnd, ICoordinateMapper* coordinateMapper, int sourceWidth, int sourceHeight, int sourceStride);
 
 
 
@@ -62,6 +62,7 @@ namespace Renderers
 
         private:
             HWND                     m_hWnd;
+            ICoordinateMapper*       m_pCoordinateMapper;
 
             // Format information
             UINT                     m_sourceHeight;

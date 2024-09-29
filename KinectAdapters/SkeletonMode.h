@@ -12,14 +12,16 @@ namespace KinectAdapters
 
 			HRESULT Init();
 			void ReleaseSpecificResources();
-
 			HRESULT AcquireLatestFrame();
-			HRESULT UpdateBodies();
+			void GetTrackingState(BOOLEAN* trackingState);
+
 			HRESULT getCurrentFrame(SkeletonModeData* data);
 			HRESULT getDataForChosenBody(Joint* joints, UINT8 bodyIdx);
 
 			ICoordinateMapper* getCoordinateMapperPtr() const;
 		private:
+			HRESULT UpdateBodies();
+
 			IKinectSensor* m_pKinectSensor;
 			ICoordinateMapper* m_pCoordinateMapper;
 			IBodyFrameReader* m_pBodyFrameReader;

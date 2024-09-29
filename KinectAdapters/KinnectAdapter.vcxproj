@@ -123,10 +123,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(KINECTSDK20_DIR)\lib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kinect20.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(OutDir)..\lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>ROBOCOPY "$(TargetDir) " "$(TargetDir)..\lib\ " /XF *.dll *.exe *.config *.manifest *.pdb /XD lib logs data /E /IS /MOVE
-if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -145,10 +146,11 @@ if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(KINECTSDK20_DIR)\lib\x64;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kinect20.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(OutDir)..\lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>ROBOCOPY "$(TargetDir) " "$(TargetDir)..\lib\ " /XF *.dll *.exe *.config *.manifest *.pdb /XD lib logs data /E /IS /MOVE
-if %errorlevel% leq 4 exit 0 else exit %errorlevel%</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

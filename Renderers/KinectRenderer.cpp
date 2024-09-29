@@ -110,7 +110,7 @@ namespace Renderers
     {
         // Calculate the body's position on the screen
         DepthSpacePoint depthPoint = { 0 };
-        skeletonModeData->m_pCoordinateMapper->MapCameraPointToDepthSpace(bodyPoint, &depthPoint);
+        m_pCoordinateMapper->MapCameraPointToDepthSpace(bodyPoint, &depthPoint);
 
         float screenPointX = static_cast<float>(depthPoint.X * m_sourceWidth) / cDepthWidth;
         float screenPointY = static_cast<float>(depthPoint.Y * m_sourceHeight) / cDepthHeight;
@@ -228,20 +228,18 @@ namespace Renderers
     /// <param name="pD2DFactory">already created D2D factory object</param>
     /// <param name="sourceWidth">width (in pixels) of image data to be drawn</param>
     /// <param name="sourceHeight">height (in pixels) of image data to be drawn</param>
-    /// <param name="sourceStride">length (in bytes) of a single scanline</param>
+    /// <param name="sourceStride">length (in bytes) of a single scanline</param>`
     /// <returns>indicates success or failure</returns>
-    HRESULT KinectRenderer::Init(HWND hWnd, ID2D1Factory* pD2DFactory, int sourceWidth, int sourceHeight, int sourceStride)
+    HRESULT KinectRenderer::Init(HWND hWnd, ICoordinateMapper* coordinateMapper, int sourceWidth, int sourceHeight, int sourceStride)
     {
-        if (NULL == pD2DFactory)
-        {
-            return E_INVALIDARG;
-        }
+        if (coordinateMapper == nullptr)
+            return E_POINTER;
 
         m_hWnd = hWnd;
+        m_pCoordinateMapper = coordinateMapper;
 
         // One factory for the entire application so save a pointer here
-        m_pD2DFactory = pD2DFactory;
-
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
         m_pD2DFactory->AddRef();
 
         // Get the frame size

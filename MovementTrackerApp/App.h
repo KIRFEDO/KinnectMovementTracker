@@ -27,7 +27,11 @@ class App
 		//Initializers
 		HRESULT InitAndRegisterWindowClasses();
 		HRESULT InitGUI();
+
 		HRESULT InitStatic();
+		HRESULT InitStatic_UserControls();
+		HRESULT InitStatic_BodyTrackingStatus();
+
 		HRESULT InitEdit();
 		HRESULT InitButtons();
 		HRESULT InitKinectAdapters();
@@ -40,6 +44,7 @@ class App
 		HRESULT ReadingModeIteration();
 		HRESULT HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
 									DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData);
+		void UpdateTrackingStates();
 
 		//Recording functions
 		HRESULT InitRecordingFolder();
@@ -52,9 +57,12 @@ class App
 		HRESULT WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT hr_skeletonMode);
 		HRESULT WriteCounters();
 		HRESULT UpdateRecordingTimer();
-
 		time_t GetTimeFromRecordingStart();
 
+		//Helper functions
+		HWND GetBodyTrackingStateStatic(int pos);
+
+		//Window elements
 		HWND m_hWndMain;									// main window
 		HWND m_hWndKinect;									// window for kinect rendering
 
@@ -74,6 +82,19 @@ class App
 		HWND m_hWndStaticReadingInformation;				// information about reading process
 		HWND m_hWndStaticRecordingTime;						// recording time
 
+		HWND m_hWndStaticBodyLabel1;
+		HWND m_hWndStaticBodyStatus1;
+		HWND m_hWndStaticBodyLabel2;
+		HWND m_hWndStaticBodyStatus2;
+		HWND m_hWndStaticBodyLabel3;
+		HWND m_hWndStaticBodyStatus3;
+		HWND m_hWndStaticBodyLabel4;
+		HWND m_hWndStaticBodyStatus4;
+		HWND m_hWndStaticBodyLabel5;
+		HWND m_hWndStaticBodyStatus5;
+		HWND m_hWndStaticBodyLabel6;
+		HWND m_hWndStaticBodyStatus6;
+
 		//App offsets
 		const UINT16 xOffset1stCol = 550;
 		const UINT16 xWidth1stCol = 150;
@@ -84,6 +105,7 @@ class App
 		const UINT16 xOffset3rdCol = xOffset2ndCol + xWidth2ndCol+25;
 		const UINT16 xWidth3rdCol = 200;
 
+		//Needed private members
 		HINSTANCE m_hInstCurr;								// current instance
 		int m_nCmdShow;										// main window show mode
 		const WCHAR m_appTitle[18] = L"Movement recorder";
@@ -116,4 +138,3 @@ class App
 		size_t timeInSec;
 		size_t timeInMin;
 };
-

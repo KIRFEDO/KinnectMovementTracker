@@ -15,16 +15,25 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectAdapters", "..\KinectAdapters\KinnectAdapter.vcxproj", "{9F993F71-DF1F-4F90-A58A-B6583398EE31}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Renderers", "..\Renderers\Renderers.vcxproj", "{9923C0D7-1C7F-4D2C-8FBF-ADB9DECFE97D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9F993F71-DF1F-4F90-A58A-B6583398EE31} = {9F993F71-DF1F-4F90-A58A-B6583398EE31}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataReaders", "..\FileReaders\MovementTrackingFileReader.vcxproj", "{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataWriters", "..\FileWriters\MovementTrackingFileCreator.vcxproj", "{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImportTester", "..\ImportTester\ImportTester.vcxproj", "{F62C361C-6D4A-4E7E-B74C-D83638157385}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9F993F71-DF1F-4F90-A58A-B6583398EE31} = {9F993F71-DF1F-4F90-A58A-B6583398EE31}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataProcessors", "..\KinectDataProcessors\KinectDataProcessors.vcxproj", "{ADE04856-11B8-4D5D-9D6B-B7BE7B5EDDC2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9F993F71-DF1F-4F90-A58A-B6583398EE31} = {9F993F71-DF1F-4F90-A58A-B6583398EE31}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatlabFileProcesser", "..\MovementFileProcesser\MovementFileProcesser.vcxproj", "{21A733B8-ECB3-4520-A902-E049C25CCC37}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MatlabFileProcessor", "..\MovementFileProcesser\MovementFileProcesser.vcxproj", "{21A733B8-ECB3-4520-A902-E049C25CCC37}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F} = {8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}
 		{ADE04856-11B8-4D5D-9D6B-B7BE7B5EDDC2} = {ADE04856-11B8-4D5D-9D6B-B7BE7B5EDDC2}

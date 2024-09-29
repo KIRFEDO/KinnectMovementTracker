@@ -3,12 +3,11 @@
 
 struct __declspec(dllexport) SkeletonModeData
 {
-	SkeletonModeData(ICoordinateMapper* m_pCoordinateMapper)
+	SkeletonModeData()
 	{
 		leftHandState = HandState_Unknown;
 		rightHandState = HandState_Unknown;
 		joints = new Joint[JointType_Count];
-		this->m_pCoordinateMapper = m_pCoordinateMapper;
 	};
 
 	~SkeletonModeData()
@@ -19,5 +18,4 @@ struct __declspec(dllexport) SkeletonModeData
 	HandState leftHandState;
 	HandState rightHandState;
 	Joint* joints;
-	ICoordinateMapper* m_pCoordinateMapper;
 };
