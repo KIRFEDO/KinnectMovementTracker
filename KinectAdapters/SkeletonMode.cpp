@@ -90,30 +90,20 @@ namespace KinectAdapters
     {
         HRESULT hr;
         hr = AcquireLatestFrame();
-        if (SUCCEEDED(hr))
-            hr = UpdateBodies();
+        if (FAILED(hr))
+            return hr;
 
-        /*
-            For now we need to track only one body.
-            Due to the logic of Kinect SDK tracked person
-            can be put in any of the 6 body slots and
-            that is why for now we are only looking for
-            the tracked slot and do not map it in any way.
-        */
-
-        //INT8 bodyIdx = -1;
-        //for (int i = 0; i<BODY_COUNT; i++) {
-        //    BOOLEAN isTracked;
-        //    IBody* body = m_ppBodies[i];
-        //    body->get_IsTracked(&isTracked);
-        //    if (isTracked) {
-        //        bodyIdx = i;
-        //        break;
-        //    }
-        //}
-
-        //if (bodyIdx != -1)
-        //    getDataForChosenBody(data->joints, bodyIdx);
+        hr = UpdateBodies();
+        for (int i = 0; i<BODY_COUNT; i++) {
+            BOOLEAN isTracked;
+            IBody* body = m_ppBodies[i];
+            body->get_IsTracked(&isTracked);
+            if (isTracked)
+            {
+                data[i].isTracked = true;
+                getDataForChosenBody(data[i].joints, i);
+            }
+        }
 
         return hr;
     }

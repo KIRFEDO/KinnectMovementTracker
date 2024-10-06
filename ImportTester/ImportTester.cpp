@@ -308,7 +308,7 @@ int main()
 
     while (1)
     {
-        SkeletonModeData* skeletonModeData = new SkeletonModeData();
+        SkeletonModeData* skeletonModeData = new SkeletonModeData(m_skeletonMode.getCoordinateMapperPtr());
         HRESULT hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
 
         if (SUCCEEDED(hr_skeletonMode))

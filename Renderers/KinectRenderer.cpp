@@ -106,7 +106,7 @@ namespace Renderers
         SafeRelease(m_pBrushHandLasso);
     }
 
-    D2D1_POINT_2F KinectRenderer::BodyToScreen(const CameraSpacePoint& bodyPoint, const SkeletonModeData* skeletonModeData)
+    D2D1_POINT_2F KinectRenderer::BodyToScreen(const CameraSpacePoint& bodyPoint)
     {
         // Calculate the body's position on the screen
         DepthSpacePoint depthPoint = { 0 };
@@ -342,33 +342,44 @@ namespace Renderers
         return hr;
     }
 
-    HRESULT KinectRenderer::DrawSkeletonMode(const SkeletonModeData* skeletonModeData)
+    HRESULT KinectRenderer::DrawSkeletonMode(SkeletonModeData* const bodyTrackingData)
     {
         HRESULT hr = S_OK;
         m_pRenderTarget->BeginDraw();
         m_pRenderTarget->Clear();
 
         D2D1_POINT_2F jointPoints[JointType_Count];
-        HandState leftHandState = skeletonModeData->leftHandState;
-        HandState rightHandState = skeletonModeData->rightHandState;
 
-        if (SUCCEEDED(hr))
+        for (int i = 0; i < BODY_COUNT; i++)
         {
-            for (int j = 0; j < JointType_Count; ++j)
+            if (bodyTrackingData[i].isTracked == false)
+                continue;
+
+            SkeletonModeData* skeletonModeData = bodyTrackingData+i;
+
+            HandState leftHandState = skeletonModeData->leftHandState;
+            HandState rightHandState = skeletonModeData->rightHandState;
+
+            if (SUCCEEDED(hr))
             {
-                jointPoints[j] = BodyToScreen(skeletonModeData->joints[j].Position, skeletonModeData);
+                for (int j = 0; j < JointType_Count; ++j)
+                {
+                    jointPoints[j] = BodyToScreen(skeletonModeData->joints[j].Position);
+                }
+
+                DrawBody(skeletonModeData->joints, jointPoints);
+
+                DrawHand(leftHandState, jointPoints[JointType_HandLeft]);
+                DrawHand(rightHandState, jointPoints[JointType_HandRight]);
             }
-
-            DrawBody(skeletonModeData->joints, jointPoints);
-
-            DrawHand(leftHandState, jointPoints[JointType_HandLeft]);
-            DrawHand(rightHandState, jointPoints[JointType_HandRight]);
         }
+        
         m_pRenderTarget->EndDraw();
+
         return hr;
     }
 
-    HRESULT KinectRenderer::UpdateKinectImage(const VIEW_MODE& viewMode, HRESULT hr_depthMode, HRESULT hr_skeletonMode, DepthModeData* depthModeData, SkeletonModeData* skeletonModeData)
+    HRESULT KinectRenderer::UpdateKinectImage(const VIEW_MODE& viewMode, HRESULT hr_depthMode, HRESULT hr_skeletonMode, DepthModeData* depthModeData, SkeletonModeData* const skeletonModeData)
     {
         switch (viewMode) {
         case VIEW_MODE::DEPTH:

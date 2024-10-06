@@ -352,8 +352,8 @@ HRESULT App::LiveModeIteration()
 	DepthModeData* depthModeData = new DepthModeData();
 	hr_depthMode = m_depthMode.getCurrentFrame(depthModeData);
 
-	SkeletonModeData* skeletonModeData = new SkeletonModeData();
-	hr_skeletonMode = m_skeletonMode.getCurrentFrame(skeletonModeData);
+	SkeletonModeData* bodyTrackingData = new SkeletonModeData[BODY_COUNT];
+	hr_skeletonMode = m_skeletonMode.getCurrentFrame(bodyTrackingData);
 	if (SUCCEEDED(hr_skeletonMode))
 		UpdateTrackingStates();
 	/*{
@@ -370,14 +370,14 @@ HRESULT App::LiveModeIteration()
 		hr = S_OK;
 	}*/
 
-	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
-	HandleDataRecording(RECORD_DATA_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, bodyTrackingData);
+	//HandleDataRecording(RECORD_DATA_FLAG, hr_depthMode, hr_skeletonMode, depthModeData, bodyTrackingData);
 
 	m_depthMode.ReleaseSpecificResources();
 	m_skeletonMode.ReleaseSpecificResources();
 
 	delete depthModeData;
-	delete skeletonModeData;
+	delete[] bodyTrackingData;
 
 	return S_OK;
 }
@@ -412,12 +412,12 @@ HRESULT App::ReadingModeIteration()
 	DepthModeData* depthModeData = new DepthModeData();
 	SkeletonModeData* skeletonModeData = new SkeletonModeData();
 
-	depthModeData->pBuffer = reinterpret_cast<UINT16*>(frameData->pBuffer);
+	/*depthModeData->pBuffer = reinterpret_cast<UINT16*>(frameData->pBuffer);
 	depthModeData->nDepthMinReliableDistance = 0;
 
 	skeletonModeData->joints = reinterpret_cast<Joint*>(frameData->pBuffer);
 
-	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG_READING, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);
+	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG_READING, hr_depthMode, hr_skeletonMode, depthModeData, skeletonModeData);*/
 	HRESULT hr = S_OK;
 
 	delete depthModeData;
@@ -429,7 +429,7 @@ HRESULT App::ReadingModeIteration()
 HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_depthMode, HRESULT hr_skeletonMode,
 								DepthModeData* pDepthModeData, SkeletonModeData* pSkeletonModeData)
 {
-	switch (recordingState)
+	/*switch (recordingState)
 	{
 		case RECORD_DATA_STATE::INITIATE_FILE_HANDLES:
 			if (FAILED(InitRecordingFolder()))
@@ -470,7 +470,7 @@ HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_de
 			ResetRecordingTimer();
 			RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
 			break;
-	}
+	}*/
 
 	return S_OK;
 }

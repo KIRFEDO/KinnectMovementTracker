@@ -56,9 +56,9 @@ namespace Renderers
             /// </summary>
             /// <param name="pJoints">joint data</param>
             /// <param name="pJointPoints">joint positions converted to screen space</param>
-            HRESULT DrawSkeletonMode(const SkeletonModeData* pJoints);
+            HRESULT DrawSkeletonMode(SkeletonModeData* const bodyTrackingData);
 
-            HRESULT UpdateKinectImage(const VIEW_MODE& viewMode, HRESULT hr_depthMode, HRESULT hr_skeletonMode, DepthModeData* res, SkeletonModeData* joints);
+            HRESULT UpdateKinectImage(const VIEW_MODE& viewMode, HRESULT hr_depthMode, HRESULT hr_skeletonMode, DepthModeData* res, SkeletonModeData* const joints);
 
         private:
             HWND                     m_hWnd;
@@ -92,7 +92,7 @@ namespace Renderers
             HRESULT DrawDepthMode(DepthModeData* res);
 
             //Skeleton mode functions
-            D2D1_POINT_2F BodyToScreen(const CameraSpacePoint& bodyPoint, const SkeletonModeData* skeletonModeData);
+            D2D1_POINT_2F BodyToScreen(const CameraSpacePoint& bodyPoint);
             void DrawBody(const Joint* pJoints, const D2D1_POINT_2F* pJointPoints);
             void DrawHand(HandState handState, const D2D1_POINT_2F& handPosition);
             void DrawBone(const Joint* pJoints, const D2D1_POINT_2F* pJointPoints, JointType joint0, JointType joint1);
