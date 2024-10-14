@@ -2,6 +2,7 @@
 #include "SkeletonModeData.h"
 #include "DepthModeData.h"
 #include "DepthModeDataRecord.h"
+#include "SkeletonModeDataRecord.h"
 #include "WindowsProcessingFunctions.h"
 #include "WindowIDs.h"
 #include <tuple>
@@ -392,16 +393,16 @@ HRESULT App::ReadingModeIteration()
 	//Snippet for opening one frame from the file below
 	//In case of using this snippet additional delition of pBuffer is needed
 
-	HRESULT hr_depthMode = S_OK;
-	HRESULT hr_skeletonMode = E_FAIL;
+	HRESULT hr_depthMode = E_FAIL;
+	HRESULT hr_skeletonMode = S_OK;
 	
-	DepthModeDataRecord* frameData = new DepthModeDataRecord();
+	SkeletonModeDataRecord frameData;
 
-	m_reader.ReadFrame(frameData);
+	m_reader.ReadFrame(&frameData);
 
-	DepthModeData dmData(frameData->GetBufferPtr(), 512, 424, 0);
+	DepthModeData* dmData = nullptr;
 	SkeletonModeData* smData = nullptr;
-	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG_READING, hr_depthMode, hr_skeletonMode, &dmData, smData);
+	m_kinectRenderer.UpdateKinectImage(VIEW_MODE_FLAG_READING, hr_depthMode, hr_skeletonMode, dmData, frameData.GetBufferPtr());
 
 	Sleep((DWORD) 30);
 
@@ -443,7 +444,7 @@ HRESULT App::HandleDataRecording(RECORD_DATA_STATE recordingState, HRESULT hr_de
 			break;
 		case RECORD_DATA_STATE::RECORDING:
 			WriteDepthModeData(pDepthModeData, hr_depthMode);
-			//WriteSkeletonModeData(pSkeletonModeData, hr_skeletonMode);
+			WriteSkeletonModeData(pSkeletonModeData, hr_skeletonMode);
 			UpdateRecordingTimer();
 			break;
 		case RECORD_DATA_STATE::FINISH_RECORDING:
@@ -516,10 +517,9 @@ HRESULT App::WriteSkeletonModeData(SkeletonModeData* skeletonModeData, HRESULT h
 	HRESULT hr = hr_depthMode;
 	if (SUCCEEDED(hr))
 	{
-		/*m_counterSkeletonModeFrames += 1;
-		FrameData* data = new SkeletonModeFrameData(reinterpret_cast<char*>(skeletonModeData), GetTimeFromRecordingStart());
-		hr = m_writerSkeletonMode.WriteFrame(data);
-		delete data;*/
+		m_counterSkeletonModeFrames += 1;
+		SkeletonModeDataRecord dataRecord(skeletonModeData, GetTimeFromRecordingStart());
+		hr = m_writerSkeletonMode.WriteFrame(&dataRecord);
 	}
 
 	return hr;

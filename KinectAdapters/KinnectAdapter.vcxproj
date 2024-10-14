@@ -166,6 +166,8 @@
     <ClCompile Include="SkeletonMode.cpp" />
     <ClCompile Include="SkeletonMode.h" />
     <ClCompile Include="SkeletonModeData.h" />
+    <ClCompile Include="SkeletonModeDataRecord.cpp" />
+    <ClCompile Include="SkeletonModeDataRecord.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

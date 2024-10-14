@@ -19,6 +19,10 @@
     <ClCompile Include="DepthModeDataRecord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SkeletonModeDataRecord.h">
+      <Filter>Recording helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonModeDataRecord.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DepthMode.h">
