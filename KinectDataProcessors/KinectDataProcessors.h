@@ -5,7 +5,7 @@
 
 #include "DynamicBuffer.h"
 #include "FileReaders.h"
-#include "FrameData.h"
+#include "IFrameData.h"
 #include "FileWriters.h"
 #include "stdafx.h"
 

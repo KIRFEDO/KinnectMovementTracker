@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "WindowIDs.h"
 #include "Enums.h"
+#include <shobjidl.h>  // For IFileDialog
+#include <shlwapi.h>   // For PathFileExists
 
 VIEW_MODE VIEW_MODE_FLAG = VIEW_MODE::DEPTH;
 RECORD_DATA_STATE RECORD_DATA_FLAG = RECORD_DATA_STATE::DO_NOT_RECORD;
@@ -10,17 +12,40 @@ APP_MODE APP_MODE_FLAG = APP_MODE::LIVE;
 
 void OnClickChoseFile(int notificationCode, HWND hwnd)
 {
-    BROWSEINFO bi{};
-    bi.hwndOwner = hwnd;
-    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-    if (pidl != NULL) {
-        wchar_t path[MAX_PATH];
-        auto filePathEdit = GetDlgItem(hwnd, EDIT_FILE_PATH);
-        if (SHGetPathFromIDList(pidl, path))
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    if (SUCCEEDED(hr))
+    {
+        IFileDialog* pFileDialog = NULL;
+        hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFileDialog));
+        if (SUCCEEDED(hr))
         {
-            SetWindowText(filePathEdit, path);
+            DWORD dwOptions;
+            hr = pFileDialog->GetOptions(&dwOptions);
+            if (SUCCEEDED(hr))
+            {
+                pFileDialog->SetOptions(dwOptions | FOS_PICKFOLDERS | FOS_PATHMUSTEXIST | FOS_FORCEFILESYSTEM);
+                hr = pFileDialog->Show(hwnd);
+                if (SUCCEEDED(hr))
+                {
+                    IShellItem* pItem;
+                    hr = pFileDialog->GetResult(&pItem);
+                    if (SUCCEEDED(hr))
+                    {
+                        PWSTR pszFilePath;
+                        hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+                        if (SUCCEEDED(hr))
+                        {
+                            auto filePathEdit = GetDlgItem(hwnd, EDIT_FILE_PATH);
+                            SetWindowText(filePathEdit, pszFilePath);
+                            CoTaskMemFree(pszFilePath);
+                        }
+                        pItem->Release();
+                    }
+                }
+            }
+            pFileDialog->Release();
         }
-        CoTaskMemFree(pidl);
+        CoUninitialize();
     }
 }
 

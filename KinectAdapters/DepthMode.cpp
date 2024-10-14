@@ -57,7 +57,7 @@ namespace KinectAdapters {
         return std::pair<int, int>(m_width, m_height);
     }
 
-    HRESULT DepthMode::getCurrentFrame(DepthModeData* pDepthModeData)
+    HRESULT DepthMode::getCurrentFrame(DepthModeData** pDepthModeData)
     {
         HRESULT hr = m_pDepthFrameReader->AcquireLatestFrame(&m_pDepthFrame);
 
@@ -113,9 +113,8 @@ namespace KinectAdapters {
                 validFrame = true;
             }
 
-            DepthModeData res(nTime, pBuffer, nWidth, nHeight,
+            *pDepthModeData = new DepthModeData(nTime, pBuffer, nWidth, nHeight,
                             nDepthMinReliableDistance, nDepthMaxDistance, validFrame);
-            *pDepthModeData = res;
         }
         return hr;
     }

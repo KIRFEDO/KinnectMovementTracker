@@ -74,6 +74,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\MovementTracker_main\$(Platform)\$(Configuration)\bin</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(KINECTSDK20_DIR)\inc</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);..\MovementTracker_main\$(Platform)\$(Configuration)\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\MovementTracker_main\$(Platform)\$(Configuration)\bin</OutDir>
@@ -127,6 +128,8 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ImportLibrary>$(OutDir)..\lib\$(TargetName).lib</ImportLibrary>
+      <AdditionalDependencies>KinectAdapters.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -151,6 +154,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ImportLibrary>$(OutDir)..\lib\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -158,7 +162,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\MovementTracker_inc\FrameData.h" />
+    <ClInclude Include="..\MovementTracker_inc\IFrameData.h" />
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
     <ClInclude Include="FileWriters.h" />
   </ItemGroup>

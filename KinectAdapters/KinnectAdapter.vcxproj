@@ -154,12 +154,15 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\MovementTracker_inc\IFrameData.h" />
     <ClInclude Include="..\MovementTracker_inc\stdafx.h" />
     <ClInclude Include="DepthMode.h" />
     <ClInclude Include="DepthModeData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DepthMode.cpp" />
+    <ClCompile Include="DepthModeDataRecord.cpp" />
+    <ClCompile Include="DepthModeDataRecord.h" />
     <ClCompile Include="SkeletonMode.cpp" />
     <ClCompile Include="SkeletonMode.h" />
     <ClCompile Include="SkeletonModeData.h" />

@@ -16,7 +16,7 @@ namespace KinectAdapters
 			void ReleaseSpecificResources();
 
 			std::pair<int, int> getFrameSize() const;
-			HRESULT getCurrentFrame(DepthModeData* pKinectDepthData);
+			HRESULT getCurrentFrame(DepthModeData** pKinectDepthData);
 
 			size_t GetSingleFrameSize();
 

@@ -21,7 +21,7 @@
     <ClInclude Include="FileWriters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MovementTracker_inc\FrameData.h">
+    <ClInclude Include="..\MovementTracker_inc\IFrameData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

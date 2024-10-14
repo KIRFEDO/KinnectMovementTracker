@@ -13,6 +13,12 @@
     <ClCompile Include="SkeletonModeData.h">
       <Filter>DataStructures</Filter>
     </ClCompile>
+    <ClCompile Include="DepthModeDataRecord.h">
+      <Filter>Recording helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthModeDataRecord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DepthMode.h">
@@ -24,6 +30,9 @@
     <ClInclude Include="DepthModeData.h">
       <Filter>DataStructures</Filter>
     </ClInclude>
+    <ClInclude Include="..\MovementTracker_inc\IFrameData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -34,6 +43,9 @@
     </Filter>
     <Filter Include="DataStructures">
       <UniqueIdentifier>{e2d2bcaf-8f8f-48e8-b5a1-040864b810bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording helpers">
+      <UniqueIdentifier>{d6432f06-bb52-433b-af0c-a255365cd804}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "FrameData.h"
+#include "IFrameData.h"
 #include <fstream>
 
 namespace FileReaders {
@@ -14,7 +14,7 @@ namespace FileReaders {
 		HRESULT Init(const WCHAR* filePath);
 		HRESULT Reset();
 		HRESULT MoveCursorAtFileBeginning();
-		HRESULT ReadFrame(FrameData* pData);
+		HRESULT ReadFrame(IFrameData* pData);
 		BOOL IsInit() const;
 		BOOL IsEOF() const;
 	private:

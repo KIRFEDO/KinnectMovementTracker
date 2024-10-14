@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "FrameData.h"
+#include "IFrameData.h"
 #include <string>
 #include <fstream>
 
@@ -13,7 +13,7 @@ namespace FileWriters {
 
 			HRESULT Init(const WCHAR* targetDir);
 			HRESULT Reset();
-			HRESULT WriteFrame(FrameData* pData);
+			HRESULT WriteFrame(IFrameData* pData);
 			BOOL IsInit() const;
 		private:
 			std::ofstream os;

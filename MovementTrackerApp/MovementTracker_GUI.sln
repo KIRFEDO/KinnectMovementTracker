@@ -20,8 +20,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Renderers", "..\Renderers\R
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataReaders", "..\FileReaders\MovementTrackingFileReader.vcxproj", "{8E5DB9E8-D952-4DC9-B7E4-FC7A79435B4F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9F993F71-DF1F-4F90-A58A-B6583398EE31} = {9F993F71-DF1F-4F90-A58A-B6583398EE31}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectDataWriters", "..\FileWriters\MovementTrackingFileCreator.vcxproj", "{C6937EAB-4A63-4489-9B80-E196ECB7BAB1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9F993F71-DF1F-4F90-A58A-B6583398EE31} = {9F993F71-DF1F-4F90-A58A-B6583398EE31}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImportTester", "..\ImportTester\ImportTester.vcxproj", "{F62C361C-6D4A-4E7E-B74C-D83638157385}"
 	ProjectSection(ProjectDependencies) = postProject

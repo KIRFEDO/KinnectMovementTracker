@@ -50,13 +50,12 @@ namespace FileWriters {
         return isInitiated;
     }
 
-    HRESULT KinectWriter::WriteFrame(FrameData* pData)
+    HRESULT KinectWriter::WriteFrame(IFrameData* pData)
     {
         if (!IsInit())
             return E_NOT_VALID_STATE;
         
-        os.write(reinterpret_cast<char const*> (pData->pBuffer), pData->dataSize);
-        os.write(reinterpret_cast<char const*> (&(pData->timestamp)), sizeof(time_t));
+        pData->WriteData(os);
     }
 
     MetadataWriter::MetadataWriter()

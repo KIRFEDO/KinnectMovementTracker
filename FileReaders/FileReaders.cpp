@@ -26,28 +26,15 @@ namespace FileReaders
         Init(m_filePath.c_str());
     }
 
-    HRESULT KinectReader::ReadFrame(FrameData* pData)
+    HRESULT KinectReader::ReadFrame(IFrameData* pData)
     {
         //Memory MUST be allocated before frame reading
         if (m_is.eof())
             return E_ABORT;
-        if (pData->pBuffer == nullptr)
-            return E_POINTER;
         if (!IsInit())
             return E_NOT_VALID_STATE;
 
-
-        try {
-            m_is.read(reinterpret_cast<char*> (pData->pBuffer), pData->dataSize);
-            m_is.read(reinterpret_cast<char*> (&(pData->timestamp)), sizeof(time_t));
-        }
-        catch (...) {
-            return E_FAIL;
-        }
-
-        return S_OK;
-
-
+        return pData->ReadData(m_is);
     }
 
     KinectReader::KinectReader()
